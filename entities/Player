@@ -1,0 +1,32 @@
+{
+  "name": "Player",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome del giocatore"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "C",
+        "A",
+        "G"
+      ],
+      "description": "Ruolo: Centro, Ala, Guardia"
+    },
+    "nba_team": {
+      "type": "string",
+      "description": "Squadra NBA di appartenenza"
+    },
+    "fantasy_team_id": {
+      "type": "string",
+      "description": "ID della squadra fantasy"
+    }
+  },
+  "required": [
+    "name",
+    "role",
+    "fantasy_team_id"
+  ]
+}

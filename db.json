@@ -1,0 +1,83 @@
+{
+  "teams": [
+    {
+      "name": "Los Angeles Niggers",
+      "id": 1,
+      "credits": 600
+    },
+    {
+      "name": "Missisipi Kings",
+      "id": 2
+    }
+  ],
+  "players": [
+    {
+      "name": "Nikola Jokic",
+      "role": "C",
+      "nba_team": "DEN",
+      "fantasy_team_id": "1",
+      "id": 1
+    },
+    {
+      "name": "Jalen Duren",
+      "role": "C",
+      "nba_team": "DET",
+      "fantasy_team_id": "1",
+      "id": 2
+    }
+  ],
+  "series": [
+    {
+      "round": "Quarti di Finale",
+      "team_home_id": 1,
+      "team_away_id": 2,
+      "team_home_name": "Los Angeles Niggers",
+      "team_away_name": "Missisipi Kings",
+      "wins_home": 0,
+      "wins_away": 0,
+      "status": "in_corso",
+      "id": 1
+    }
+  ],
+  "matches": [
+    {
+      "series_id": "1",
+      "game_number": 1,
+      "team_home_id": 1,
+      "team_away_id": 2,
+      "team_home_name": "Los Angeles Niggers",
+      "team_away_name": "Missisipi Kings",
+      "status": "da_giocare",
+      "score_home": 0,
+      "score_away": 0,
+      "id": 1,
+      "lineup_home_last_updated": "2026-04-15T21:52:19.987Z"
+    }
+  ],
+  "lineups": [
+    {
+      "match_id": "1",
+      "team_id": 1,
+      "player_id": 1,
+      "player_name": "Nikola Jokic",
+      "player_role": "C",
+      "player_nba_team": "DEN",
+      "lineup_role": "capitano",
+      "raw_score": 0,
+      "final_score": 0,
+      "id": 1
+    },
+    {
+      "match_id": "1",
+      "team_id": 1,
+      "player_id": 2,
+      "player_name": "Jalen Duren",
+      "player_role": "C",
+      "player_nba_team": "DET",
+      "lineup_role": "sesto_uomo",
+      "raw_score": 0,
+      "final_score": 0,
+      "id": 2
+    }
+  ]
+}

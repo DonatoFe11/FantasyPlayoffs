@@ -1,0 +1,56 @@
+{
+  "name": "Series",
+  "type": "object",
+  "properties": {
+    "round": {
+      "type": "string",
+      "enum": [
+        "Quarti di Finale",
+        "Semifinale",
+        "Finale"
+      ],
+      "description": "Turno del playoff"
+    },
+    "team_home_id": {
+      "type": "string",
+      "description": "ID squadra casa"
+    },
+    "team_away_id": {
+      "type": "string",
+      "description": "ID squadra trasferta"
+    },
+    "team_home_name": {
+      "type": "string",
+      "description": "Nome squadra casa"
+    },
+    "team_away_name": {
+      "type": "string",
+      "description": "Nome squadra trasferta"
+    },
+    "wins_home": {
+      "type": "number",
+      "default": 0,
+      "description": "Vittorie squadra casa"
+    },
+    "wins_away": {
+      "type": "number",
+      "default": 0,
+      "description": "Vittorie squadra trasferta"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "in_corso",
+        "completata"
+      ],
+      "default": "in_corso"
+    }
+  },
+  "required": [
+    "round",
+    "team_home_id",
+    "team_away_id",
+    "team_home_name",
+    "team_away_name"
+  ]
+}

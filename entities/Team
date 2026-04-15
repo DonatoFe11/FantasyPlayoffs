@@ -1,0 +1,18 @@
+{
+  "name": "Team",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome della squadra fantasy"
+    },
+    "credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Crediti disponibili della squadra"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

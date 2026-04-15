@@ -1,0 +1,59 @@
+{
+  "name": "LineupEntry",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "ID della partita"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "ID della squadra fantasy"
+    },
+    "player_id": {
+      "type": "string",
+      "description": "ID del giocatore"
+    },
+    "player_name": {
+      "type": "string"
+    },
+    "player_role": {
+      "type": "string",
+      "enum": [
+        "C",
+        "A",
+        "G"
+      ]
+    },
+    "player_nba_team": {
+      "type": "string"
+    },
+    "lineup_role": {
+      "type": "string",
+      "enum": [
+        "titolare",
+        "capitano",
+        "sesto_uomo",
+        "panchinaro"
+      ],
+      "description": "Ruolo nella formazione"
+    },
+    "raw_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Punteggio grezzo del giocatore"
+    },
+    "final_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Punteggio finale (con moltiplicatore)"
+    }
+  },
+  "required": [
+    "match_id",
+    "team_id",
+    "player_id",
+    "player_name",
+    "lineup_role"
+  ]
+}

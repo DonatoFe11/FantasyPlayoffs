@@ -1,0 +1,58 @@
+{
+  "name": "Match",
+  "type": "object",
+  "properties": {
+    "series_id": {
+      "type": "string"
+    },
+    "game_number": {
+      "type": "number"
+    },
+    "team_home_id": {
+      "type": "string"
+    },
+    "team_away_id": {
+      "type": "string"
+    },
+    "team_home_name": {
+      "type": "string"
+    },
+    "team_away_name": {
+      "type": "string"
+    },
+    "score_home": {
+      "type": "number",
+      "default": 0
+    },
+    "score_away": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "da_giocare",
+        "in_corso",
+        "completata"
+      ],
+      "default": "da_giocare"
+    },
+    "winner_id": {
+      "type": "string"
+    },
+    "lineup_home_last_updated": {
+      "type": "string",
+      "description": "ISO timestamp ultima modifica formazione squadra casa"
+    },
+    "lineup_away_last_updated": {
+      "type": "string",
+      "description": "ISO timestamp ultima modifica formazione squadra trasferta"
+    }
+  },
+  "required": [
+    "series_id",
+    "game_number",
+    "team_home_id",
+    "team_away_id"
+  ]
+}
