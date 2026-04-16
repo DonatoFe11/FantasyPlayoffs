@@ -22,7 +22,18 @@ export default function ScoreDialog({ open, onOpenChange, matchId, teamId, teamN
   async function load() {
     setLoading(true);
     const e = await base44.entities.LineupEntry.filter({ match_id: matchId, team_id: teamId }, null, 50);
-    e.sort((a, b) => LINEUP_ROLE_ORDER.indexOf(a.lineup_role) - LINEUP_ROLE_ORDER.indexOf(b.lineup_role));
+    
+    // --- NUOVO ORDINAMENTO STABILE ---
+    e.sort((a, b) => {
+      // 1. Ordina per ruolo in campo (Capitano, Titolare...)
+      const roleDiff = LINEUP_ROLE_ORDER.indexOf(a.lineup_role) - LINEUP_ROLE_ORDER.indexOf(b.lineup_role);
+      if (roleDiff !== 0) return roleDiff;
+      
+      // 2. Regola di spareggio: Se hanno lo stesso ruolo, ordina in ordine alfabetico!
+      return a.player_name.localeCompare(b.player_name);
+    });
+    // ---------------------------------
+
     setEntries(e);
     setLoading(false);
   }
