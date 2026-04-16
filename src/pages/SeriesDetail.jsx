@@ -54,12 +54,36 @@ export default function SeriesDetail() {
   }
 
   async function deleteMatch(matchId) {
-    // Delete lineup entries first
+    // 1. Elimina i giocatori schierati
     const entries = await base44.entities.LineupEntry.filter({ match_id: matchId });
     for (const entry of entries) {
       await base44.entities.LineupEntry.delete(entry.id);
     }
+    
+    // 2. Elimina la partita
     await base44.entities.Match.delete(matchId);
+
+    // --- NUOVO CODICE: Ricalcolo vittorie della Serie ---
+    // Prendiamo tutte le partite RIMASTE di questa serie
+    const remainingMatches = await base44.entities.Match.filter({ series_id: seriesId });
+    
+    // Contiamo quante ne ha vinte la squadra in casa e in trasferta
+    const completedMatches = remainingMatches.filter((m) => m.status === "completata");
+    const winsHome = completedMatches.filter((m) => m.winner_id === series.team_home_id).length;
+    const winsAway = completedMatches.filter((m) => m.winner_id === series.team_away_id).length;
+
+    // Se ci sono meno di 3 vittorie, la serie torna in corso (non completata)
+    const newStatus = (winsHome >= 3 || winsAway >= 3) ? "completata" : "in_corso";
+
+    // Aggiorniamo la serie su Supabase
+    await base44.entities.Series.update(seriesId, { 
+      wins_home: winsHome, 
+      wins_away: winsAway,
+      status: newStatus 
+    });
+    // --------------------------------------------------
+
+    // Ricarichiamo la pagina
     load();
   }
 
