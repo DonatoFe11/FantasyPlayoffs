@@ -55,6 +55,29 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
       base44.entities.Player.filter({ fantasy_team_id: teamId }, null, 100),
     ]);
     e.sort((a, b) => LINEUP_ROLE_ORDER.indexOf(a.lineup_role) - LINEUP_ROLE_ORDER.indexOf(b.lineup_role));
+    
+    // --- NUOVO CODICE: Auto-rilevamento intelligente del modulo ---
+    const starters = e.filter((x) => x.lineup_role === "capitano" || x.lineup_role === "titolare");
+    let initialFormation = "2-2-1"; // Il modulo di base
+
+    if (starters.length > 0) {
+      const counts = { G: 0, A: 0, C: 0 };
+      starters.forEach((x) => { if (x.player_role) counts[x.player_role]++; });
+
+      // Cerca il primo modulo che può ospitare i giocatori attualmente in campo
+      const bestFormation = FORMATIONS.find((f) => {
+        const [g, a, c] = f.split("-").map(Number);
+        return g >= counts.G && a >= counts.A && c >= counts.C;
+      });
+
+      if (bestFormation) {
+        initialFormation = bestFormation;
+      }
+    }
+    
+    setFormation(initialFormation); // Aggiorna il bottone arancione
+    // --------------------------------------------------------------
+
     setEntries(e);
     setPlayers(p);
     setLoading(false);
