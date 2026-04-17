@@ -19,7 +19,9 @@ export default function LineupEntryRow({ entry, onRemove, onUpdate }) {
   function saveScore() {
     const score = parseFloat(rawScore) || 0;
     const finalScore = Math.round(score * config.multiplier * 100) / 100;
-    onUpdate({ raw_score: score, final_score: finalScore });
+    
+    // Aggiungiamo is_manual_score: true per dire a Python "Questo l'ho inserito io a mano!"
+    onUpdate({ raw_score: score, final_score: finalScore, is_manual_score: true }); 
     setEditing(false);
   }
 
