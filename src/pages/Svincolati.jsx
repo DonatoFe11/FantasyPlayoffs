@@ -274,9 +274,9 @@ export default function Svincolati() {
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <div className="bg-primary/10 text-primary px-3 py-1 rounded-lg font-bold">
-                {player.credits} Cr
+            <div className="text-right ml-4">
+              <div className="bg-primary/10 text-primary px-3 py-1 rounded-lg font-bold whitespace-nowrap min-w-fit">
+                {player.credits} <span className="text-[10px] ml-0.5">Cr</span>
               </div>
             </div>
           </div>
