@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, Loader2, Filter, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -10,17 +11,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+// Funzione magica per recuperare i loghi dai server ESPN
+function getTeamLogo(abbr) {
+  if (!abbr) return "";
+  // ESPN usa alcune sigle leggermente diverse da quelle standard, le correggiamo qui:
+  const exceptions = {
+    GSW: "gs", NOP: "no", NYK: "ny", SAS: "sa", UTA: "utah", WAS: "wsh", CHO: "cha"
+  };
+  const espnAbbr = exceptions[abbr] || abbr.toLowerCase();
+  return `https://a.espncdn.com/i/teamlogos/nba/500/${espnAbbr}.png`;
+}
 
 export default function Svincolati() {
   const [allNbaPlayers, setAllNbaPlayers] = useState([]);
   const [rosteredIds, setRosteredIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
-  // Stati per i filtri (vivono solo sul dispositivo dell'utente!)
   const [searchName, setSearchName] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
-  const [teamSearch, setTeamSearch] = useState("");
   const [sortBy, setSortBy] = useState("credits_desc");
+  
+  // Nuovo stato: un array che contiene le sigle delle squadre selezionate
+  const [selectedTeams, setSelectedTeams] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -28,7 +47,6 @@ export default function Svincolati() {
 
   async function loadData() {
     try {
-      // 1. Scarichiamo TUTTI i giocatori NBA dal listone
       const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/nba_players?select=*&limit=1000`;
       const resNba = await fetch(url, {
         headers: {
@@ -38,10 +56,8 @@ export default function Svincolati() {
       });
       const nbaData = await resNba.json();
 
-      // 2. Scarichiamo TUTTI i giocatori già nelle rose del fanta
       const rosteredData = await base44.entities.Player.filter({}, "", 1000);
       
-      // Creiamo un Set (una lista super veloce da leggere) con gli ID occupati
       const occupiedIds = new Set(
         rosteredData.map((p) => p.nba_player_id).filter(Boolean)
       );
@@ -55,45 +71,42 @@ export default function Svincolati() {
     }
   }
 
-  // La magia dei filtri: si ricalcola in automatico quando cambi un'impostazione
+  // Estraiamo tutte le 30 squadre NBA dal listone per creare la griglia dei loghi
+  const uniqueTeams = useMemo(() => {
+    const teams = new Set(allNbaPlayers.map(p => p.nba_team_abbr));
+    return Array.from(teams).filter(Boolean).sort();
+  }, [allNbaPlayers]);
+
   const freeAgents = useMemo(() => {
-    // Prima regola: deve essere libero (non presente in rosteredIds)
     let filtered = allNbaPlayers.filter((p) => !rosteredIds.has(p.id));
 
-    // Filtro per Nome
     if (searchName) {
       filtered = filtered.filter((p) =>
         p.name.toLowerCase().includes(searchName.toLowerCase())
       );
     }
 
-    // Filtro per Ruolo
     if (roleFilter !== "ALL") {
       filtered = filtered.filter((p) => p.role === roleFilter);
     }
 
-    // Filtro per Squadre (es: se scrivi "LAL BOS", cerca chi sta ai Lakers o ai Celtics)
-    if (teamSearch) {
-      const teamsToSearch = teamSearch.toUpperCase().split(/[\s,]+/).filter(Boolean);
-      if (teamsToSearch.length > 0) {
-        filtered = filtered.filter((p) =>
-          teamsToSearch.some((t) => p.nba_team_abbr.includes(t))
-        );
-      }
+    // Nuova logica di filtro a selezione multipla
+    if (selectedTeams.length > 0) {
+      filtered = filtered.filter((p) => selectedTeams.includes(p.nba_team_abbr));
     }
 
-    // Ordinamento
     filtered.sort((a, b) => {
       if (sortBy === "credits_desc") return b.credits - a.credits;
       if (sortBy === "credits_asc") return a.credits - b.credits;
       if (sortBy === "name_asc") return a.name.localeCompare(b.name);
       if (sortBy === "name_desc") return b.name.localeCompare(a.name);
       if (sortBy === "team_asc") return a.nba_team_abbr.localeCompare(b.nba_team_abbr);
+      if (sortBy === "team_desc") return b.nba_team_abbr.localeCompare(a.nba_team_abbr); // AGGIUNTO Z-A!
       return 0;
     });
 
     return filtered;
-  }, [allNbaPlayers, rosteredIds, searchName, roleFilter, teamSearch, sortBy]);
+  }, [allNbaPlayers, rosteredIds, searchName, roleFilter, selectedTeams, sortBy]);
 
   if (loading) {
     return (
@@ -114,7 +127,6 @@ export default function Svincolati() {
         </p>
       </div>
 
-      {/* Pannello Filtri */}
       <div className="bg-card border border-border rounded-xl p-4 space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <Filter className="w-4 h-4 text-primary" />
@@ -144,12 +156,62 @@ export default function Svincolati() {
             </SelectContent>
           </Select>
 
-          <Input
-            placeholder="Squadre (es: LAL, BOS, MIA)"
-            value={teamSearch}
-            onChange={(e) => setTeamSearch(e.target.value)}
-            title="Scrivi le sigle delle squadre separate da spazio o virgola"
-          />
+          {/* Nuovo Dropdown con Loghi NBA */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-between font-normal bg-background">
+                {selectedTeams.length === 0
+                  ? "Tutte le squadre"
+                  : `${selectedTeams.length} squadre selezionate`}
+                <span className="opacity-50 text-xs">▼</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-3" align="start">
+              <div className="flex justify-between items-center mb-3 pb-2 border-b">
+                <span className="text-sm font-semibold">Filtra per Squadra</span>
+                {selectedTeams.length > 0 && (
+                  <button
+                    className="text-xs text-primary hover:underline font-medium"
+                    onClick={() => setSelectedTeams([])}
+                  >
+                    Resetta
+                  </button>
+                )}
+              </div>
+              <ScrollArea className="h-64 pr-3">
+                <div className="grid grid-cols-4 gap-2">
+                  {uniqueTeams.map((team) => {
+                    const isSelected = selectedTeams.includes(team);
+                    return (
+                      <div
+                        key={team}
+                        onClick={() => {
+                          setSelectedTeams(prev =>
+                            prev.includes(team)
+                              ? prev.filter(t => t !== team)
+                              : [...prev, team]
+                          )
+                        }}
+                        className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col items-center justify-center transition-all ${
+                          isSelected 
+                            ? "border-primary bg-primary/10 shadow-sm" 
+                            : "border-transparent hover:bg-secondary/80"
+                        }`}
+                      >
+                        <img 
+                          src={getTeamLogo(team)} 
+                          alt={team} 
+                          className="w-10 h-10 object-contain mb-1 drop-shadow-sm"
+                          onError={(e) => { e.target.style.display = 'none'; }} // Se il logo non carica, sparisce
+                        />
+                        <span className="text-[10px] font-bold text-center">{team}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </PopoverContent>
+          </Popover>
 
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="flex gap-2">
@@ -162,28 +224,37 @@ export default function Svincolati() {
               <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
               <SelectItem value="name_desc">Nome (Z-A)</SelectItem>
               <SelectItem value="team_asc">Squadra NBA (A-Z)</SelectItem>
+              <SelectItem value="team_desc">Squadra NBA (Z-A)</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Lista Giocatori */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {freeAgents.slice(0, 150).map((player) => ( // Limite a 150 per non bloccare il browser
+        {freeAgents.slice(0, 150).map((player) => (
           <div
             key={player.id}
             className="flex items-center justify-between bg-card border border-border rounded-xl p-4 transition-colors hover:border-primary/50"
           >
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold">{player.name}</span>
-                <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-bold">
-                  {player.role}
-                </Badge>
+            <div className="flex items-center gap-3">
+              {/* Mostriamo il logo anche qui di fianco al giocatore! */}
+              <img 
+                src={getTeamLogo(player.nba_team_abbr)} 
+                alt={player.nba_team_abbr}
+                className="w-8 h-8 object-contain drop-shadow-md"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold">{player.name}</span>
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-bold">
+                    {player.role}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {player.position_full} • {player.nba_team_abbr}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {player.position_full} • {player.nba_team} ({player.nba_team_abbr})
-              </p>
             </div>
             <div className="text-right">
               <div className="bg-primary/10 text-primary px-3 py-1 rounded-lg font-bold">
