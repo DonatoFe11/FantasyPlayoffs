@@ -25,10 +25,31 @@ export default function TeamDetail() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  
+  // STATO PER GLI ID OCCUPATI
+  const [occupiedIds, setOccupiedIds] = useState(new Set());
 
   useEffect(() => {
     load();
   }, [teamId]);
+
+  // Carica gli ID di tutti i giocatori già assegnati a una squadra
+  async function loadOccupiedIds() {
+    try {
+      const allRostered = await base44.entities.Player.filter({}, "", 1000);
+      const ids = new Set(allRostered.map(p => p.nba_player_id).filter(Boolean));
+      setOccupiedIds(ids);
+    } catch (error) {
+      console.error("Errore nel caricamento ID occupati:", error);
+    }
+  }
+
+  // Ogni volta che apriamo il Dialog, aggiorniamo la lista degli occupati
+  useEffect(() => {
+    if (dialogOpen) {
+      loadOccupiedIds();
+    }
+  }, [dialogOpen]);
 
   // Motore di ricerca in tempo reale verso Supabase
   useEffect(() => {
@@ -40,8 +61,7 @@ export default function TeamDetail() {
     const delayDebounceFn = setTimeout(async () => {
       setIsSearching(true);
       try {
-        // Usiamo direttamente le variabili d'ambiente di Vite per interrogare la nuova tabella
-        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/nba_players?name=ilike.*${searchQuery}*&limit=10`;
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/nba_players?name=ilike.*${searchQuery}*&limit=20`;
         const response = await fetch(url, {
           headers: {
             apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
@@ -49,16 +69,20 @@ export default function TeamDetail() {
           }
         });
         const data = await response.json();
-        setSearchResults(data);
+        
+        // FILTRO: Escludiamo i giocatori che sono già in un roster
+        const filteredData = data.filter(p => !occupiedIds.has(p.id));
+        
+        setSearchResults(filteredData);
       } catch (error) {
         console.error("Errore nella ricerca:", error);
       } finally {
         setIsSearching(false);
       }
-    }, 300); // Aspetta 300ms da quando smetti di scrivere
+    }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+  }, [searchQuery, occupiedIds]);
 
   async function load() {
     const [teams, allPlayers] = await Promise.all([
@@ -70,13 +94,12 @@ export default function TeamDetail() {
     setLoading(false);
   }
 
-  // Nuova funzione per aggiungere il giocatore direttamente dai risultati
-async function addPlayer(selectedNbaPlayer) {
+  async function addPlayer(selectedNbaPlayer) {
     await base44.entities.Player.create({
       name: selectedNbaPlayer.name,
       role: selectedNbaPlayer.role,
       nba_team: selectedNbaPlayer.nba_team_abbr,
-      nba_player_id: selectedNbaPlayer.id, // Questo è fondamentale per l'automazione futura!
+      nba_player_id: selectedNbaPlayer.id,
       fantasy_team_id: teamId,
     });
     
@@ -186,7 +209,7 @@ async function addPlayer(selectedNbaPlayer) {
 
                 {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
                   <p className="text-center text-sm text-muted-foreground py-4">
-                    Nessun giocatore trovato.
+                    Giocatore non trovato o già assegnato.
                   </p>
                 )}
                 
@@ -201,7 +224,6 @@ async function addPlayer(selectedNbaPlayer) {
         </Dialog>
       </div>
 
-      {/* Crediti */}
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
