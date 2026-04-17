@@ -20,7 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Funzione magica per recuperare i loghi dai server ESPN
 function getTeamLogo(abbr) {
-  if (!abbr) return "";
+  if (!abbr || abbr === "FA") return "";
   // ESPN usa alcune sigle leggermente diverse da quelle standard, le correggiamo qui:
   const exceptions = {
     GSW: "gs", NOP: "no", NYK: "ny", SAS: "sa", UTA: "utah", WAS: "wsh", CHO: "cha"
@@ -38,7 +38,7 @@ export default function Svincolati() {
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [sortBy, setSortBy] = useState("credits_desc");
   
-  // Nuovo stato: un array che contiene le sigle delle squadre selezionate
+  // Stato per le squadre selezionate
   const [selectedTeams, setSelectedTeams] = useState([]);
 
   useEffect(() => {
@@ -71,10 +71,14 @@ export default function Svincolati() {
     }
   }
 
-  // Estraiamo tutte le 30 squadre NBA dal listone per creare la griglia dei loghi
+  // Estraiamo le squadre NBA dal listone
   const uniqueTeams = useMemo(() => {
-    const teams = new Set(allNbaPlayers.map(p => p.nba_team_abbr));
-    return Array.from(teams).filter(Boolean).sort();
+    const teams = new Set(allNbaPlayers.map(p => p.nba_team_abbr || "FA"));
+    return Array.from(teams).filter(Boolean).sort((a, b) => {
+      if (a === "FA") return 1; // Mettiamo FA in fondo alla lista dei loghi
+      if (b === "FA") return -1;
+      return a.localeCompare(b);
+    });
   }, [allNbaPlayers]);
 
   const freeAgents = useMemo(() => {
@@ -90,18 +94,20 @@ export default function Svincolati() {
       filtered = filtered.filter((p) => p.role === roleFilter);
     }
 
-    // Nuova logica di filtro a selezione multipla
     if (selectedTeams.length > 0) {
-      filtered = filtered.filter((p) => selectedTeams.includes(p.nba_team_abbr));
+      filtered = filtered.filter((p) => selectedTeams.includes(p.nba_team_abbr || "FA"));
     }
 
     filtered.sort((a, b) => {
+      const abbrA = a.nba_team_abbr || "FA";
+      const abbrB = b.nba_team_abbr || "FA";
+      
       if (sortBy === "credits_desc") return b.credits - a.credits;
       if (sortBy === "credits_asc") return a.credits - b.credits;
       if (sortBy === "name_asc") return a.name.localeCompare(b.name);
       if (sortBy === "name_desc") return b.name.localeCompare(a.name);
-      if (sortBy === "team_asc") return a.nba_team_abbr.localeCompare(b.nba_team_abbr);
-      if (sortBy === "team_desc") return b.nba_team_abbr.localeCompare(a.nba_team_abbr); // AGGIUNTO Z-A!
+      if (sortBy === "team_asc") return abbrA.localeCompare(abbrB);
+      if (sortBy === "team_desc") return abbrB.localeCompare(abbrA);
       return 0;
     });
 
@@ -156,7 +162,7 @@ export default function Svincolati() {
             </SelectContent>
           </Select>
 
-          {/* Nuovo Dropdown con Loghi NBA */}
+          {/* Dropdown con Loghi NBA */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-full justify-between font-normal bg-background">
@@ -198,12 +204,18 @@ export default function Svincolati() {
                             : "border-transparent hover:bg-secondary/80"
                         }`}
                       >
-                        <img 
-                          src={getTeamLogo(team)} 
-                          alt={team} 
-                          className="w-10 h-10 object-contain mb-1 drop-shadow-sm"
-                          onError={(e) => { e.target.style.display = 'none'; }} // Se il logo non carica, sparisce
-                        />
+                        {team !== "FA" ? (
+                          <img 
+                            src={getTeamLogo(team)} 
+                            alt={team} 
+                            className="w-10 h-10 object-contain mb-1 drop-shadow-sm"
+                            onError={(e) => { e.target.style.display = 'none'; }} 
+                          />
+                        ) : (
+                          <div className="w-10 h-10 flex items-center justify-center mb-1 bg-background rounded-full border">
+                            <span className="text-[10px] font-black">FA</span>
+                          </div>
+                        )}
                         <span className="text-[10px] font-bold text-center">{team}</span>
                       </div>
                     );
@@ -237,13 +249,19 @@ export default function Svincolati() {
             className="flex items-center justify-between bg-card border border-border rounded-xl p-4 transition-colors hover:border-primary/50"
           >
             <div className="flex items-center gap-3">
-              {/* Mostriamo il logo anche qui di fianco al giocatore! */}
-              <img 
-                src={getTeamLogo(player.nba_team_abbr)} 
-                alt={player.nba_team_abbr}
-                className="w-8 h-8 object-contain drop-shadow-md"
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
+              {/* Gestione logo o quadratino FA per il giocatore */}
+              {player.nba_team_abbr && player.nba_team_abbr !== "FA" ? (
+                <img 
+                  src={getTeamLogo(player.nba_team_abbr)} 
+                  alt={player.nba_team_abbr}
+                  className="w-8 h-8 object-contain drop-shadow-md"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              ) : (
+                <div className="w-8 h-8 flex items-center justify-center bg-muted rounded text-[10px] font-bold text-muted-foreground border">
+                  FA
+                </div>
+              )}
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold">{player.name}</span>
@@ -252,7 +270,7 @@ export default function Svincolati() {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {player.position_full} • {player.nba_team_abbr}
+                  {player.position_full} • {player.nba_team_abbr || "FA"}
                 </p>
               </div>
             </div>
