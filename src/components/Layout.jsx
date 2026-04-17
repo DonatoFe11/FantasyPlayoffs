@@ -1,9 +1,10 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Trophy, Users, Swords, LayoutDashboard } from "lucide-react";
+import { Trophy, Users, Swords, LayoutDashboard, UserPlus } from "lucide-react";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
   { path: "/squadre", label: "Squadre", icon: Users },
+  { path: "/svincolati", label: "Svincolati", icon: UserPlus },
   { path: "/serie", label: "Serie", icon: Swords },
 ];
 

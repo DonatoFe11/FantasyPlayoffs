@@ -12,6 +12,7 @@ import TeamDetail from './pages/TeamDetail';
 import SeriesList from './pages/SeriesList';
 import SeriesDetail from './pages/SeriesDetail';
 import MatchDetail from './pages/MatchDetail';
+import Svincolati from './pages/Svincolati';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -46,6 +47,7 @@ const AuthenticatedApp = () => {
         <Route path="/serie" element={<SeriesList />} />
         <Route path="/serie/:seriesId" element={<SeriesDetail />} />
         <Route path="/partita/:matchId" element={<MatchDetail />} />
+        <Route path="/svincolati" element={<Svincolati />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>
