@@ -1,16 +1,9 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useParams, Link } from "react-router-dom";
-import { Plus, Loader2, ArrowLeft, Trash2, Coins, Check, X } from "lucide-react";
+import { Plus, Loader2, ArrowLeft, Trash2, Coins, Check, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -27,15 +20,45 @@ export default function TeamDetail() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCredits, setEditingCredits] = useState(false);
   const [creditsValue, setCreditsValue] = useState("");
-  const [newPlayer, setNewPlayer] = useState({
-    name: "",
-    role: "G",
-    nba_team: "",
-  });
+  
+  // Stati per la nuova barra di ricerca
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     load();
   }, [teamId]);
+
+  // Motore di ricerca in tempo reale verso Supabase
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        // Usiamo direttamente le variabili d'ambiente di Vite per interrogare la nuova tabella
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/nba_players?name=ilike.*${searchQuery}*&limit=10`;
+        const response = await fetch(url, {
+          headers: {
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          }
+        });
+        const data = await response.json();
+        setSearchResults(data);
+      } catch (error) {
+        console.error("Errore nella ricerca:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300); // Aspetta 300ms da quando smetti di scrivere
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   async function load() {
     const [teams, allPlayers] = await Promise.all([
@@ -47,15 +70,18 @@ export default function TeamDetail() {
     setLoading(false);
   }
 
-  async function addPlayer() {
-    if (!newPlayer.name.trim()) return;
+  // Nuova funzione per aggiungere il giocatore direttamente dai risultati
+async function addPlayer(selectedNbaPlayer) {
     await base44.entities.Player.create({
-      name: newPlayer.name.trim(),
-      role: newPlayer.role,
-      nba_team: newPlayer.nba_team.trim().toUpperCase(),
+      name: selectedNbaPlayer.name,
+      role: selectedNbaPlayer.role,
+      nba_team: selectedNbaPlayer.nba_team_abbr,
+      nba_player_id: selectedNbaPlayer.id, // Questo è fondamentale per l'automazione futura!
       fantasy_team_id: teamId,
     });
-    setNewPlayer({ name: "", role: "G", nba_team: "" });
+    
+    setSearchQuery("");
+    setSearchResults([]);
     setDialogOpen(false);
     load();
   }
@@ -117,43 +143,59 @@ export default function TeamDetail() {
               Aggiungi Giocatore
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Nuovo Giocatore</DialogTitle>
+              <DialogTitle>Cerca Giocatore NBA</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
-              <Input
-                placeholder="Nome giocatore (es. LeBron)"
-                value={newPlayer.name}
-                onChange={(e) =>
-                  setNewPlayer({ ...newPlayer, name: e.target.value })
-                }
-              />
-              <Select
-                value={newPlayer.role}
-                onValueChange={(v) =>
-                  setNewPlayer({ ...newPlayer, role: v })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="C">Centro (C)</SelectItem>
-                  <SelectItem value="A">Ala (A)</SelectItem>
-                  <SelectItem value="G">Guardia (G)</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input
-                placeholder="Squadra NBA (es. LAL)"
-                value={newPlayer.nba_team}
-                onChange={(e) =>
-                  setNewPlayer({ ...newPlayer, nba_team: e.target.value })
-                }
-              />
-              <Button onClick={addPlayer} className="w-full">
-                Aggiungi
-              </Button>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  className="pl-9"
+                  placeholder="Es. LeBron, Jokic..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+              
+              <div className="max-h-[300px] overflow-y-auto space-y-2">
+                {isSearching && (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+                
+                {!isSearching && searchResults.map((player) => (
+                  <div 
+                    key={player.id} 
+                    onClick={() => addPlayer(player)}
+                    className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-secondary/50 hover:border-primary/50 cursor-pointer transition-all"
+                  >
+                    <div>
+                      <p className="font-bold">{player.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {player.nba_team_abbr} • {player.position_full} ({player.role})
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-primary">{player.credits} Cr</p>
+                    </div>
+                  </div>
+                ))}
+
+                {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
+                  <p className="text-center text-sm text-muted-foreground py-4">
+                    Nessun giocatore trovato.
+                  </p>
+                )}
+                
+                {!isSearching && searchQuery.length < 2 && (
+                  <p className="text-center text-xs text-muted-foreground py-4">
+                    Digita almeno 2 lettere per cercare.
+                  </p>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -227,7 +269,7 @@ export default function TeamDetail() {
                       <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">
                         {player.nba_team}
                       </span>
-                    )}
+                    )}                    
                   </div>
                   <Button
                     variant="ghost"

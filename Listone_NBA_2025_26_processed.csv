@@ -1,0 +1,549 @@
+First Name,Last Name,Position,Team,Cr,Team_abbr
+Nikola,Jokic,Centro,Denver Nuggets,"29,2",DEN
+Luka,Doncic,Guardia,Los Angeles Lakers,"24,2",LAL
+Giannis,Antetokounmpo,Ala,Milwaukee Bucks,"22,5",MIL
+Victor,Wembanyama,Ala,San Antonio Spurs,"20,9",SAS
+Shai,Gilgeous-Alexander,Guardia,Oklahoma City Thunder,"20,4",OKC
+Cade,Cunningham,Guardia,Detroit Pistons,"18,8",DET
+James,Harden,Guardia,Los Angeles Clippers,"17,2",LAC
+Jalen,Johnson,Ala,Atlanta Hawks,"17,1",ATL
+Karl-anthony,Towns,Centro,New York Knicks,17,NYK
+Alperen,Sengun,Centro,Houston Rockets,17,HOU
+Anthony,Davis,Centro,Dallas Mavericks,"16,9",DAL
+Domantas,Sabonis,Centro,Sacramento Kings,"16,9",SAC
+Anthony,Edwards,Guardia,Minnesota Timberwolves,"16,5",MIN
+Austin,Reaves,Guardia,Los Angeles Lakers,"16,5",LAL
+Evan,Mobley,Ala,Cleveland Cavaliers,"16,3",CLE
+Jayson,Tatum,Ala,Boston Celtics,"16,2",BOS
+Tyrese,Haliburton,Guardia,Indiana Pacers,"16,2",IND
+Tyrese,Maxey,Guardia,Philadelphia 76ers,"16,2",PHI
+Lebron,James,Ala,Los Angeles Lakers,"16,1",LAL
+Jaylen,Brown,Ala,Boston Celtics,16,BOS
+Josh,Giddey,Guardia,Chicago Bulls,16,CHI
+Deni,Avdija,Ala,Portland Trail Blazers,"15,8",POR
+Jalen,Duren,Centro,Detroit Pistons,"15,7",DET
+Kevin,Durant,Ala,Houston Rockets,"15,6",HOU
+Jalen,Brunson,Guardia,New York Knicks,"15,5",NYK
+Damian,Lillard,Guardia,Portland Trail Blazers,"15,3",POR
+Scottie,Barnes,Ala,Toronto Raptors,"15,3",TOR
+Stephen,Curry,Guardia,Golden State Warriors,"15,2",GSW
+Kyrie,Irving,Guardia,Dallas Mavericks,"15,2",DAL
+Donovan,Mitchell,Guardia,Cleveland Cavaliers,"15,2",CLE
+Jamal,Murray,Guardia,Denver Nuggets,"15,2",DEN
+Ivica,Zubac,Centro,Los Angeles Clippers,"15,2",LAC
+Trae,Young,Guardia,Atlanta Hawks,"14,9",ATL
+Julius,Randle,Ala,Minnesota Timberwolves,"14,9",MIN
+Lamelo,Ball,Guardia,Charlotte Hornets,"14,9",CHA
+Pascal,Siakam,Ala,Indiana Pacers,"14,7",IND
+Michael,Porter Jr,Ala,Brooklyn Nets,"14,7",BKN
+Lauri,Markkanen,Ala,Utah Jazz,"14,5",UTA
+Kawhi,Leonard,Ala,Los Angeles Clippers,"14,4",LAC
+Joel,Embiid,Centro,Philadelphia 76ers,"14,3",PHI
+Devin,Booker,Guardia,Phoenix Suns,14,PHX
+Jimmy,Butler,Ala,Golden State Warriors,"13,9",GSW
+Bam,Adebayo,Centro,Miami Heat,"13,9",MIA
+Amen,Thompson,Guardia,Houston Rockets,"13,8",HOU
+Rudy,Gobert,Centro,Minnesota Timberwolves,"13,7",MIN
+Franz,Wagner,Ala,Orlando Magic,"13,5",ORL
+De'Aaron,Fox,Guardia,San Antonio Spurs,"13,1",SAS
+Nikola,Vucevic,Centro,Chicago Bulls,13,CHI
+Chet,Holmgren,Ala,Oklahoma City Thunder,13,OKC
+Kristaps,Porzingis,Ala,Atlanta Hawks,"12,9",ATL
+Paolo,Banchero,Ala,Orlando Magic,"12,7",ORL
+Josh,Hart,Ala,New York Knicks,"12,7",NYK
+Mikal,Bridges,Ala,New York Knicks,"12,7",NYK
+Derrick,White,Guardia,Boston Celtics,"12,7",BOS
+Cooper,Flagg,Ala,Dallas Mavericks,"12,7",DAL
+Trey,Murphy III,Ala,New Orleans Pelicans,"12,5",NOP
+Jarrett,Allen,Centro,Cleveland Cavaliers,"12,4",CLE
+Nicolas,Claxton,Centro,Brooklyn Nets,"12,4",BKN
+Deandre,Ayton,Centro,Los Angeles Lakers,12,LAL
+Isaiah,Hartenstein,Centro,Oklahoma City Thunder,12,OKC
+Zion,Williamson,Ala,New Orleans Pelicans,"11,9",NOP
+Onyeka,Okongwu,Centro,Atlanta Hawks,"11,8",ATL
+Jalen,Williams,Ala,Oklahoma City Thunder,"11,8",OKC
+Ja,Morant,Guardia,Memphis Grizzlies,"11,7",MEM
+Mark,Williams,Centro,Phoenix Suns,"11,7",PHX
+Keyonte,George,Guardia,Utah Jazz,"11,7",UTA
+Desmond,Bane,Guardia,Orlando Magic,"11,6",ORL
+Dyson,Daniels,Guardia,Atlanta Hawks,"11,6",ATL
+Walker,Kessler,Centro,Utah Jazz,"11,6",UTA
+Immanuel,Quickley,Guardia,Toronto Raptors,"11,5",TOR
+Miles,Bridges,Ala,Charlotte Hornets,"11,3",CHA
+Tyler,Herro,Guardia,Miami Heat,"11,2",MIA
+Norman,Powell,Guardia,Miami Heat,"11,1",MIA
+Kel'el,Ware,Centro,Miami Heat,"11,1",MIA
+Russell,Westbrook,Guardia,Sacramento Kings,11,SAC
+Demar,Derozan,Ala,Sacramento Kings,11,SAC
+Jakob,Poeltl,Centro,Toronto Raptors,"10,9",TOR
+Darius,Garland,Guardia,Cleveland Cavaliers,"10,8",CLE
+Alex,Sarr,Centro,Washington Wizards,"10,8",WAS
+Jrue,Holiday,Guardia,Portland Trail Blazers,"10,7",POR
+Payton,Pritchard,Guardia,Boston Celtics,"10,7",BOS
+Myles,Turner,Centro,Milwaukee Bucks,"10,6",MIL
+Andrew,Nembhard,Guardia,Indiana Pacers,"10,6",IND
+Brandon,Ingram,Ala,Toronto Raptors,"10,4",TOR
+Coby,White,Guardia,Chicago Bulls,"10,4",CHI
+Stephon,Castle,Guardia,San Antonio Spurs,"10,4",SAS
+Dejounte,Murray,Guardia,New Orleans Pelicans,"10,2",NOP
+CJ,Mccollum,Guardia,Washington Wizards,"10,2",WAS
+Quentin,Grimes,Guardia,Philadelphia 76ers,"10,2",PHI
+Donovan,Clingan,Centro,Portland Trail Blazers,"10,1",POR
+Zach,Lavine,Guardia,Sacramento Kings,10,SAC
+Og,Anunoby,Ala,New York Knicks,10,NYK
+Zach,Edey,Centro,Memphis Grizzlies,10,MEM
+Vj,Edgecombe,Guardia,Philadelphia 76ers,10,PHI
+Kon,Knueppel,Guardia,Charlotte Hornets,10,CHA
+RJ,Barrett,Ala,Toronto Raptors,"9,9",TOR
+Aaron,Gordon,Ala,Denver Nuggets,"9,9",DEN
+Devin,Vassell,Guardia,San Antonio Spurs,"9,9",SAS
+Donte,DiVincenzo,Guardia,Minnesota Timberwolves,"9,9",MIN
+Ryan,Rollins,Guardia,Milwaukee Bucks,"9,9",MIL
+Wendell,Carter Jr,Centro,Orlando Magic,"9,8",ORL
+Andrew,Wiggins,Ala,Miami Heat,"9,7",MIA
+Naz,Reid,Centro,Minnesota Timberwolves,"9,7",MIN
+Neemias,Queta,Centro,Boston Celtics,"9,7",BOS
+Paul,George,Ala,Philadelphia 76ers,"9,6",PHI
+Shaedon,Sharpe,Guardia,Portland Trail Blazers,"9,6",POR
+P.J.,Washington,Ala,Dallas Mavericks,"9,5",DAL
+Jaden,Mcdaniels,Ala,Minnesota Timberwolves,"9,5",MIN
+Jabari,Smith Jr,Ala,Houston Rockets,"9,4",HOU
+Jaren,Jackson Jr,Ala,Memphis Grizzlies,"9,4",MEM
+Jalen,Green,Guardia,Phoenix Suns,"9,4",PHX
+Toumani,Camara,Ala,Portland Trail Blazers,"9,3",POR
+Davion,Mitchell,Guardia,Miami Heat,"9,2",MIA
+Jalen,Suggs,Guardia,Orlando Magic,"9,2",ORL
+Jerami,Grant,Ala,Portland Trail Blazers,"9,1",POR
+Keegan,Murray,Ala,Sacramento Kings,9,SAC
+Nickeil,Alexander-Walker,Guardia,Atlanta Hawks,9,ATL
+Santi,Aldama,Ala,Memphis Grizzlies,9,MEM
+Matas,Buzelis,Ala,Chicago Bulls,"8,9",CHI
+Jusuf,Nurkic,Centro,Utah Jazz,"8,8",UTA
+Bennedict,Mathurin,Guardia,Indiana Pacers,"8,8",IND
+Royce,O'Neale,Ala,Phoenix Suns,"8,8",PHX
+Brandin,Podziemski,Guardia,Golden State Warriors,"8,8",GSW
+Ausar,Thompson,Guardia,Detroit Pistons,"8,7",DET
+Collin,Gillespie,Guardia,Phoenix Suns,"8,7",PHX
+Keldon,Johnson,Ala,San Antonio Spurs,"8,6",SAS
+Tre,Jones,Guardia,Chicago Bulls,"8,6",CHI
+Derik,Queen,Centro,New Orleans Pelicans,"8,6",NOP
+Collin,Sexton,Guardia,Charlotte Hornets,"8,5",CHA
+Jaime,Jaquez Jr,Ala,Miami Heat,"8,5",MIA
+Kyshawn,George,Guardia,Washington Wizards,"8,5",WAS
+Daniel,Gafford,Centro,Dallas Mavericks,"8,4",DAL
+Brandon,Miller,Ala,Charlotte Hornets,"8,4",CHA
+Ryan,Kalkbrenner,Centro,Charlotte Hornets,"8,4",CHA
+Andre,Drummond,Centro,Philadelphia 76ers,"8,3",PHI
+De'Andre,Hunter,Ala,Cleveland Cavaliers,"8,3",CLE
+Ayo,Dosunmu,Guardia,Chicago Bulls,"8,3",CHI
+Christian,Braun,Guardia,Denver Nuggets,"8,3",DEN
+Naji,Marshall,Ala,Dallas Mavericks,"8,3",DAL
+Khris,Middleton,Ala,Washington Wizards,"8,2",WAS
+Bobby,Portis,Ala,Milwaukee Bucks,"8,2",MIL
+Cameron,Johnson,Ala,Denver Nuggets,"8,2",DEN
+Kelly,Oubre Jr,Ala,Philadelphia 76ers,"8,2",PHI
+Draymond,Green,Ala,Golden State Warriors,"8,1",GSW
+Tobias,Harris,Ala,Detroit Pistons,"8,1",DET
+Kevin,Porter Jr,Guardia,Milwaukee Bucks,"8,1",MIL
+Anfernee,Simons,Guardia,Boston Celtics,"8,1",BOS
+Dillon,Brooks,Ala,Phoenix Suns,"8,1",PHX
+Moussa,Diabate,Ala,Charlotte Hornets,"8,1",CHA
+Max,Christie,Guardia,Dallas Mavericks,"8,1",DAL
+Kyle,Filipowski,Centro,Utah Jazz,"8,1",UTA
+Malik,Monk,Guardia,Sacramento Kings,8,SAC
+Dennis,Schroder,Guardia,Sacramento Kings,8,SAC
+Harrison,Barnes,Ala,San Antonio Spurs,"7,9",SAS
+Peyton,Watson,Guardia,Denver Nuggets,"7,9",DEN
+Saddiq,Bey,Ala,New Orleans Pelicans,"7,8",NOP
+Jordan,Poole,Guardia,New Orleans Pelicans,"7,8",NOP
+Cam,Thomas,Guardia,Brooklyn Nets,"7,8",BKN
+Luke,Kornet,Centro,San Antonio Spurs,"7,8",SAS
+Jeremiah,Fears,Guardia,New Orleans Pelicans,"7,8",NOP
+Steven,Adams,Centro,Houston Rockets,"7,6",HOU
+Duncan,Robinson,Ala,Detroit Pistons,"7,6",DET
+T.J.,Mcconnell,Guardia,Indiana Pacers,"7,6",IND
+Jay,Huff,Centro,Indiana Pacers,"7,6",IND
+Yves,Missi,Centro,New Orleans Pelicans,"7,6",NOP
+Isaiah,Stewart,Ala,Detroit Pistons,"7,5",DET
+Jonathan,Kuminga,Ala,Golden State Warriors,"7,5",GSW
+Moses,Moody,Guardia,Golden State Warriors,"7,5",GSW
+Zaccharie,Risacher,Ala,Atlanta Hawks,"7,5",ATL
+Jaylon,Tyson,Guardia,Cleveland Cavaliers,"7,5",CLE
+Jaylen,Wells,Ala,Memphis Grizzlies,"7,5",MEM
+Cedric,Coward,Guardia,Memphis Grizzlies,"7,5",MEM
+Fred,Vanvleet,Guardia,Houston Rockets,"7,4",HOU
+John,Collins,Ala,Los Angeles Clippers,"7,4",LAC
+Rui,Hachimura,Ala,Los Angeles Lakers,"7,4",LAL
+Aaron,Nesmith,Ala,Indiana Pacers,"7,4",IND
+Noah,Clowney,Ala,Brooklyn Nets,"7,4",BKN
+Dylan,Harper,Guardia,San Antonio Spurs,"7,4",SAS
+Egor,Demin,Guardia,Brooklyn Nets,"7,3",BKN
+Kyle,Kuzma,Ala,Milwaukee Bucks,"7,2",MIL
+Grayson,Allen,Guardia,Phoenix Suns,"7,2",PHX
+Tari,Eason,Ala,Houston Rockets,"7,2",HOU
+Miles,McBride,Guardia,New York Knicks,"7,2",NYK
+Anthony,Black,Guardia,Orlando Magic,"7,2",ORL
+Cam,Spencer,Guardia,Memphis Grizzlies,"7,2",MEM
+Robert,Williams III,Centro,Portland Trail Blazers,"7,1",POR
+Terance,Mann,Guardia,Brooklyn Nets,"7,1",BKN
+Goga,Bitadze,Centro,Orlando Magic,"7,1",ORL
+Cason,Wallace,Guardia,Oklahoma City Thunder,"7,1",OKC
+Spencer,Dinwiddie,Guardia,Charlotte Hornets,7,CHA
+Tim,Hardaway Jr,Ala,Denver Nuggets,7,DEN
+Julian,Champagnie,Ala,San Antonio Spurs,7,SAS
+Reed,Sheppard,Guardia,Houston Rockets,7,HOU
+Isaiah,Collier,Guardia,Utah Jazz,"6,9",UTA
+Maxime,Raynaud,Centro,Sacramento Kings,"6,9",SAC
+D'angelo,Russell,Guardia,Dallas Mavericks,"6,8",DAL
+Precious,Achiuwa,Ala,Sacramento Kings,"6,8",SAC
+Isaiah,Joe,Guardia,Oklahoma City Thunder,"6,8",OKC
+Jaylin,Williams,Ala,Oklahoma City Thunder,"6,8",OKC
+Bilal,Coulibaly,Guardia,Washington Wizards,"6,8",WAS
+Mitchell,Robinson,Centro,New York Knicks,"6,7",NYK
+A.J.,Green,Guardia,Milwaukee Bucks,"6,7",MIL
+Dereck,Lively II,Centro,Dallas Mavericks,"6,7",DAL
+Kevin,Huerter,Guardia,Chicago Bulls,"6,6",CHI
+Ajay,Mitchell,Guardia,Oklahoma City Thunder,"6,6",OKC
+Ryan,Dunn,Ala,Phoenix Suns,"6,6",PHX
+Ace,Bailey,Ala,Utah Jazz,"6,6",UTA
+Sam,Hauser,Ala,Boston Celtics,"6,5",BOS
+Jordan,Walsh,Guardia,Boston Celtics,"6,5",BOS
+Carlton,Carrington,Guardia,Washington Wizards,"6,5",WAS
+Collin,Murray-boyles,Ala,Toronto Raptors,"6,5",TOR
+Wooga,Poplar,Ala,Chicago Bulls,"6,5",CHI
+Ryan,Nembhard,Guardia,Dallas Mavericks,"6,5",DAL
+Jonas,Valanciunas,Centro,Denver Nuggets,"6,4",DEN
+Klay,Thompson,Guardia,Dallas Mavericks,"6,4",DAL
+Lonzo,Ball,Guardia,Cleveland Cavaliers,"6,4",CLE
+Obi,Toppin,Ala,Indiana Pacers,"6,4",IND
+Brice,Sensabaugh,Ala,Utah Jazz,"6,4",UTA
+Nique,Clifford,Guardia,Sacramento Kings,"6,4",SAC
+Buddy,Hield,Guardia,Golden State Warriors,"6,3",GSW
+Aaron,Wiggins,Guardia,Oklahoma City Thunder,"6,3",OKC
+Sandro,Mamukelashvili,Ala,Toronto Raptors,"6,3",TOR
+Vince,Williams Jr,Guardia,Memphis Grizzlies,"6,3",MEM
+Kris,Dunn,Guardia,Los Angeles Clippers,"6,3",LAC
+Tre,Johnson,Guardia,Washington Wizards,"6,3",WAS
+Bradley,Beal,Guardia,Los Angeles Clippers,"6,2",LAC
+Jalen,Smith,Centro,Chicago Bulls,"6,2",CHI
+Jock,Landale,Centro,Memphis Grizzlies,"6,2",MEM
+Scotty,Pippen Jr,Guardia,Memphis Grizzlies,"6,2",MEM
+Sam,Merrill,Guardia,Cleveland Cavaliers,"6,2",CLE
+Luguentz,Dort,Guardia,Oklahoma City Thunder,"6,1",OKC
+Day'ron,Sharpe,Centro,Brooklyn Nets,"6,1",BKN
+Jordan,Goodwin,Guardia,Phoenix Suns,"6,1",PHX
+Quinten,Post,Centro,Golden State Warriors,"6,1",GSW
+Herbert,Jones,Ala,New Orleans Pelicans,6,NOP
+Jeremy,Sochan,Ala,San Antonio Spurs,6,SAS
+Trendon,Watford,Ala,Philadelphia 76ers,6,PHI
+Keon,Johnson,Guardia,Brooklyn Nets,6,BKN
+Ben,Sheppard,Guardia,Indiana Pacers,6,IND
+Tristan,Da Silva,Ala,Orlando Magic,6,ORL
+Danny,Wolf,Ala,Brooklyn Nets,6,BKN
+Al,Horford,Centro,Golden State Warriors,"5,9",GSW
+Caris,Levert,Guardia,Detroit Pistons,"5,9",DET
+Marvin,Bagley III,Ala,Washington Wizards,"5,9",WAS
+Bruce,Brown,Guardia,Denver Nuggets,"5,9",DEN
+Jose,Alvarado,Guardia,New Orleans Pelicans,"5,9",NOP
+Vit,Krejci,Guardia,Atlanta Hawks,"5,9",ATL
+Jarace,Walker,Ala,Indiana Pacers,"5,9",IND
+Jared,Mccain,Guardia,Philadelphia 76ers,"5,9",PHI
+Jamal,Shead,Guardia,Toronto Raptors,"5,9",TOR
+Clint,Capela,Centro,Houston Rockets,"5,8",HOU
+Marcus,Smart,Guardia,Los Angeles Lakers,"5,8",LAL
+Mike,Conley,Guardia,Minnesota Timberwolves,"5,8",MIN
+Gary,Payton II,Guardia,Golden State Warriors,"5,8",GSW
+Ty,Jerome,Guardia,Memphis Grizzlies,"5,7",MEM
+Kam,Jones,Guardia,Indiana Pacers,"5,7",IND
+Jake,Laravia,Ala,Los Angeles Lakers,"5,6",LAL
+Pelle,Larsson,Guardia,Miami Heat,"5,6",MIA
+Malcolm,Brogdon,Guardia,New York Knicks,"5,5",NYK
+Cole,Anthony,Guardia,Milwaukee Bucks,"5,5",MIL
+Jaxson,Hayes,Centro,Los Angeles Lakers,"5,5",LAL
+Isaiah,Jackson,Ala,Indiana Pacers,"5,5",IND
+Cam,Whitmore,Ala,Washington Wizards,"5,5",WAS
+Kasparas,Jakucionis,Guardia,Miami Heat,"5,5",MIA
+Jordan,Clarkson,Guardia,New York Knicks,"5,4",NYK
+Alex,Caruso,Guardia,Oklahoma City Thunder,"5,4",OKC
+Corey,Kispert,Ala,Washington Wizards,"5,4",WAS
+Dru,Smith,Guardia,Miami Heat,"5,4",MIA
+Dominick,Barlow,Ala,Philadelphia 76ers,"5,4",PHI
+Daniss,Jenkins,Guardia,Detroit Pistons,"5,4",DET
+Johni,Broome,Centro,Philadelphia 76ers,"5,4",PHI
+Caleb,Love,Guardia,Portland Trail Blazers,"5,4",POR
+Gary,Trent Jr,Guardia,Milwaukee Bucks,"5,3",MIL
+Kentavious,Caldwell-Pope,Guardia,Memphis Grizzlies,"5,3",MEM
+Simone,Fontecchio,Ala,Miami Heat,"5,3",MIA
+Nikola,Jovic,Ala,Miami Heat,"5,3",MIA
+Justin,Champagnie,Guardia,Washington Wizards,"5,3",WAS
+Tyrese,Martin,Ala,Brooklyn Nets,"5,3",BKN
+Mouhamed,Gueye,Ala,Atlanta Hawks,"5,3",ATL
+Chris,Paul,Guardia,Los Angeles Clippers,"5,2",LAC
+Jaden,Ivey,Guardia,Detroit Pistons,"5,2",DET
+Derrick,Jones Jr,Ala,Los Angeles Clippers,"5,2",LAC
+Ziaire,Williams,Ala,Brooklyn Nets,"5,2",BKN
+Brandon,Williams,Guardia,Dallas Mavericks,"5,2",DAL
+Josh,Minott,Ala,Boston Celtics,"5,2",BOS
+Ron,Holland II,Ala,Detroit Pistons,"5,2",DET
+Brook,Lopez,Centro,Los Angeles Clippers,"5,1",LAC
+Paul,Reed,Ala,Detroit Pistons,"5,1",DET
+Dean,Wade,Ala,Cleveland Cavaliers,"5,1",CLE
+Josh,Okogie,Guardia,Houston Rockets,"5,1",HOU
+Yang,Hansen,Centro,Portland Trail Blazers,"5,1",POR
+Walter,Clayton Jr.,Guardia,Utah Jazz,"5,1",UTA
+Will,Richard,Guardia,Golden State Warriors,"5,1",GSW
+Isaac,Okoro,Ala,Chicago Bulls,5,CHI
+Jared,Butler,Guardia,Phoenix Suns,5,PHX
+Dennis,Smith Jr,Guardia,Dallas Mavericks,5,DAL
+Pat,Spencer,Guardia,Golden State Warriors,5,GSW
+Noa,Essengue,Ala,Chicago Bulls,5,CHI
+Craig,Porter Jr.,Guardia,Cleveland Cavaliers,5,CLE
+Kobe,Sanders,Guardia,Los Angeles Clippers,5,LAC
+Dorian,Finney-Smith,Ala,Houston Rockets,"4,9",HOU
+Luke,Kennard,Guardia,Atlanta Hawks,"4,9",ATL
+De'Anthony,Melton,Guardia,Golden State Warriors,"4,9",GSW
+Svi,Mykhailiuk,Guardia,Utah Jazz,"4,9",UTA
+Caleb,Grill,Guardia,Chicago Bulls,"4,9",CHI
+Nae'qwan,Tomlin,Ala,Cleveland Cavaliers,"4,9",CLE
+Kyle,Anderson,Ala,Utah Jazz,"4,8",UTA
+Jericho,Sims,Centro,Milwaukee Bucks,"4,8",MIL
+Aaron,Holiday,Guardia,Houston Rockets,"4,8",HOU
+Nick,Richards,Centro,Phoenix Suns,"4,8",PHX
+Jabari,Walker,Ala,Philadelphia 76ers,"4,8",PHI
+Scoot,Henderson,Guardia,Portland Trail Blazers,"4,8",POR
+Tristan,Vukcevic,Ala,Washington Wizards,"4,8",WAS
+Oso,Ighodaro,Ala,Phoenix Suns,"4,8",PHX
+Chaz,Lanier,Guardia,Detroit Pistons,"4,8",DET
+Daron,Holmes Ii,Ala,Denver Nuggets,"4,8",DEN
+Sion,James,Guardia,Charlotte Hornets,"4,8",CHA
+Brandon,Clarke,Ala,Memphis Grizzlies,"4,7",MEM
+Patrick,Williams,Ala,Chicago Bulls,"4,7",CHI
+Max,Strus,Guardia,Cleveland Cavaliers,"4,7",CLE
+Moritz,Wagner,Ala,Orlando Magic,"4,7",ORL
+Luka,Garza,Centro,Boston Celtics,"4,7",BOS
+Bryce,McGowens,Guardia,New Orleans Pelicans,"4,7",NOP
+Tidjane,Salaun,Ala,Charlotte Hornets,"4,7",CHA
+Adem,Bona,Ala,Philadelphia 76ers,"4,7",PHI
+Asa,Newell,Ala,Atlanta Hawks,"4,7",ATL
+Max,Shulga,Guardia,Boston Celtics,"4,7",BOS
+Drake,Powell,Guardia,Brooklyn Nets,"4,7",BKN
+David Jones,Garcia,Ala,San Antonio Spurs,"4,7",SAS
+Kevin,Love,Ala,Utah Jazz,"4,6",UTA
+Nicolas,Batum,Ala,Los Angeles Clippers,"4,6",LAC
+Justin,Edwards,Ala,Philadelphia 76ers,"4,6",PHI
+Liam,Mcneeley,Ala,Charlotte Hornets,"4,6",CHA
+Spencer,Jones,Ala,Denver Nuggets,"4,6",DEN
+Cameron,Payne,Guardia,Indiana Pacers,"4,5",IND
+Thomas,Bryant,Centro,Cleveland Cavaliers,"4,5",CLE
+Talen,Horton-Tucker,Guardia,Chicago Bulls,"4,5",CHI
+Tyus,Jones,Guardia,Orlando Magic,"4,5",ORL
+Gabe,Vincent,Guardia,Los Angeles Lakers,"4,5",LAL
+Delon,Wright,Guardia,Indiana Pacers,"4,5",IND
+Kelly,Olynyk,Ala,San Antonio Spurs,"4,5",SAS
+Tre,Mann,Guardia,Charlotte Hornets,"4,5",CHA
+Alex,Len,Centro,New York Knicks,"4,5",NYK
+Jaden,Hardy,Guardia,Dallas Mavericks,"4,5",DAL
+Jamaree,Bouyea,Guardia,Phoenix Suns,"4,5",PHX
+Tristan,Thompson,Centro,Cleveland Cavaliers,"4,5",CLE
+Kris,Murray,Ala,Portland Trail Blazers,"4,5",POR
+Daquan,Jeffries,Guardia,Charlotte Hornets,"4,5",CHA
+Keaton,Wallace,Guardia,Atlanta Hawks,"4,5",ATL
+Kevon,Looney,Centro,New Orleans Pelicans,"4,4",NOP
+Zach,Collins,Ala,Chicago Bulls,"4,4",CHI
+Tony,Bradley,Centro,Indiana Pacers,"4,4",IND
+Jase,Richardson,Guardia,Orlando Magic,"4,4",ORL
+Noah,Penda,Guardia,Orlando Magic,"4,4",ORL
+Micah,Peavy,Guardia,New Orleans Pelicans,"4,4",NOP
+Jamir,Watkins,Guardia,Washington Wizards,"4,4",WAS
+Jarred,Vanderbilt,Ala,Los Angeles Lakers,"4,3",LAL
+Bogdan,Bogdanovic,Guardia,Los Angeles Clippers,"4,3",LAC
+Monte,Morris,Guardia,Indiana Pacers,"4,3",IND
+Jeremiah,Robinson-Earl,Ala,Indiana Pacers,"4,3",IND
+Larry,Nance Jr,Ala,Cleveland Cavaliers,"4,3",CLE
+Drew,Eubanks,Centro,Sacramento Kings,"4,3",SAC
+John,Konchar,Guardia,Memphis Grizzlies,"4,3",MEM
+Georges,Niang,Ala,Utah Jazz,"4,3",UTA
+Jevon,Carter,Guardia,Chicago Bulls,"4,3",CHI
+Kobe,Brown,Ala,Los Angeles Clippers,"4,3",LAC
+Nick,Smith Jr,Guardia,Los Angeles Lakers,"4,3",LAL
+Guerschon,Yabusele,Ala,New York Knicks,"4,3",NYK
+Ja'kobe,Walter,Guardia,Toronto Raptors,"4,3",TOR
+Branden,Carlson,Centro,Oklahoma City Thunder,"4,3",OKC
+Will,Riley,Ala,Washington Wizards,"4,3",WAS
+Brooks,Barnhizer,Ala,Oklahoma City Thunder,"4,3",OKC
+Seth,Curry,Guardia,Golden State Warriors,"4,2",GSW
+Garrison,Mathews,Guardia,Indiana Pacers,"4,2",IND
+Keon,Ellis,Guardia,Sacramento Kings,"4,2",SAC
+Trayce,Jackson-Davis,Ala,Golden State Warriors,"4,2",GSW
+Taylor,Hendricks,Ala,Utah Jazz,"4,2",UTA
+Karlo,Matkovic,Ala,New Orleans Pelicans,"4,2",NOP
+Drew,Timme,Ala,Los Angeles Lakers,"4,2",LAL
+Nigel,Hayes-davis,Ala,Phoenix Suns,"4,2",PHX
+Khaman,Maluach,Centro,Phoenix Suns,"4,2",PHX
+Javonte,Green,Guardia,Detroit Pistons,"4,1",DET
+Dalen,Terry,Ala,Chicago Bulls,"4,1",CHI
+Kenrich,Williams,Guardia,Oklahoma City Thunder,"4,1",OKC
+Gradey,Dick,Guardia,Toronto Raptors,"4,1",TOR
+Kobe,Bufkin,Guardia,Memphis Grizzlies,"4,1",MEM
+Sidy,Cissoko,Guardia,Portland Trail Blazers,"4,1",POR
+Julian,Phillips,Ala,Chicago Bulls,"4,1",CHI
+Jaylen,Clark,Guardia,Minnesota Timberwolves,"4,1",MIN
+Gui,Santos,Ala,Golden State Warriors,"4,1",GSW
+Tyler,Kolek,Guardia,New York Knicks,"4,1",NYK
+Trey,Alexander,Guardia,New Orleans Pelicans,"4,1",NOP
+Keshad,Johnson,Ala,Miami Heat,"4,1",MIA
+Kyle,Lowry,Guardia,Philadelphia 76ers,4,PHI
+Terry,Rozier,Guardia,Miami Heat,4,MIA
+Jae,Crowder,Ala,Sacramento Kings,4,SAC
+James,Wiseman,Centro,Indiana Pacers,4,IND
+Mason,Plumlee,Centro,Charlotte Hornets,4,CHA
+Maxi,Kleber,Ala,Los Angeles Lakers,4,LAL
+Chris,Boucher,Ala,Boston Celtics,4,BOS
+Dwight,Powell,Centro,Dallas Mavericks,4,DAL
+Jae'Sean,Tate,Ala,Houston Rockets,4,HOU
+Patty,Mills,Guardia,Los Angeles Clippers,4,LAC
+Jonathan,Isaac,Ala,Orlando Magic,4,ORL
+P.J.,Tucker,Ala,New York Knicks,4,NYK
+Eric,Gordon,Guardia,Philadelphia 76ers,4,PHI
+Ousmane,Dieng,Ala,Oklahoma City Thunder,4,OKC
+Xavier,Tillman,Ala,Boston Celtics,4,BOS
+Grant,Williams,Ala,Charlotte Hornets,4,CHA
+Bismack,Biyombo,Centro,San Antonio Spurs,4,SAS
+Markelle,Fultz,Guardia,Sacramento Kings,4,SAC
+Taj,Gibson,Ala,Charlotte Hornets,4,CHA
+Jeff,Green,Ala,Houston Rockets,4,HOU
+Matisse,Thybulle,Ala,Portland Trail Blazers,4,POR
+Ochai,Agbaji,Guardia,Toronto Raptors,4,TOR
+Pat,Connaughton,Guardia,Charlotte Hornets,4,CHA
+Markieff,Morris,Ala,Los Angeles Lakers,4,LAL
+Josh,Green,Guardia,Charlotte Hornets,4,CHA
+Joe,Ingles,Ala,Minnesota Timberwolves,4,MIN
+Malaki,Branham,Ala,Washington Wizards,4,WAS
+Caleb,Martin,Ala,Dallas Mavericks,4,DAL
+Nah'shon,Hyland,Guardia,Minnesota Timberwolves,4,MIN
+Gary,Harris,Guardia,Milwaukee Bucks,4,MIL
+Amir,Coffey,Guardia,Milwaukee Bucks,4,MIL
+Landry,Shamet,Guardia,New York Knicks,4,NYK
+Jordan,McLaughlin,Guardia,San Antonio Spurs,4,SAS
+Isaiah,Livers,Ala,Phoenix Suns,4,PHX
+Doug,McDermott,Ala,Sacramento Kings,4,SAC
+Dario,Saric,Ala,Sacramento Kings,4,SAC
+Torrey,Craig,Ala,Boston Celtics,4,BOS
+Blake,Wesley,Guardia,Portland Trail Blazers,4,POR
+Deandre,Jordan,Centro,New Orleans Pelicans,4,NOP
+Marjon,Beauchamp,Ala,Philadelphia 76ers,4,PHI
+Garrett,Temple,Guardia,Toronto Raptors,4,TOR
+Damion,Lee,Guardia,Phoenix Suns,4,PHX
+Kevin,Knox II,Ala,Golden State Warriors,4,GSW
+Taurean,Prince,Ala,Milwaukee Bucks,4,MIL
+Thanasis,Antetokounmpo,Ala,Milwaukee Bucks,4,MIL
+Patrick,Baldwin Jr,Ala,Los Angeles Clippers,4,LAC
+David,Roddy,Ala,Toronto Raptors,4,TOR
+Zeke,Nnaji,Ala,Denver Nuggets,4,DEN
+Anthony,Gill,Ala,Washington Wizards,4,WAS
+JD,Davison,Guardia,Houston Rockets,4,HOU
+TyTy,Washington,Guardia,Los Angeles Clippers,4,LAC
+Haywood,Highsmith,Ala,Brooklyn Nets,4,BKN
+Kenyon,Martin Jr,Ala,Utah Jazz,4,UTA
+Charles,Bassey,Centro,Memphis Grizzlies,4,MEM
+Jason,Preston,Guardia,Los Angeles Clippers,4,LAC
+Wendell,Moore,Guardia,Detroit Pistons,4,DET
+JT,Thor,Ala,Washington Wizards,4,WAS
+Jaden,Springer,Guardia,New Orleans Pelicans,4,NOP
+James,Johnson,Ala,Indiana Pacers,4,IND
+Braxton,Key,Ala,Golden State Warriors,4,GSW
+Trevelin,Queen,Guardia,Orlando Magic,4,ORL
+Jamal,Cain,Ala,Orlando Magic,4,ORL
+Caleb,Houstan,Guardia,Atlanta Hawks,4,ATL
+Lindy,Waters III,Ala,San Antonio Spurs,4,SAS
+Micah,Potter,Centro,San Antonio Spurs,4,SAS
+Orlando,Robinson,Centro,Orlando Magic,4,ORL
+Mac,McClung,Guardia,Indiana Pacers,4,IND
+Cody,Zeller,Centro,Houston Rockets,4,HOU
+Johnny,Juzang,Guardia,Minnesota Timberwolves,4,MIN
+Nate,Williams,Guardia,Houston Rockets,4,HOU
+Quenton,Jackson,Guardia,Indiana Pacers,4,IND
+Emoni,Bates,Ala,Philadelphia 76ers,4,PHI
+Dante,Exum,Guardia,Dallas Mavericks,4,DAL
+Julian,Strawther,Guardia,Denver Nuggets,4,DEN
+Hunter,Tyson,Ala,Denver Nuggets,4,DEN
+Olivier,Maxence-Prosper,Ala,Memphis Grizzlies,4,MEM
+Jalen,Pickett,Guardia,Denver Nuggets,4,DEN
+Marcus,Sasser,Guardia,Detroit Pistons,4,DET
+Jordan,Hawkins,Guardia,New Orleans Pelicans,4,NOP
+Jalen,Wilson,Ala,Brooklyn Nets,4,BKN
+A.j.,Lawson,Guardia,Toronto Raptors,4,TOR
+Leonard,Miller,Ala,Minnesota Timberwolves,4,MIN
+Jett,Howard,Guardia,Orlando Magic,4,ORL
+Rayan,Rupert,Guardia,Portland Trail Blazers,4,POR
+Colby,Jones,Guardia,Detroit Pistons,4,DET
+E.J.,Liddell,Ala,Brooklyn Nets,4,BKN
+Jacob,Toppin,Ala,Atlanta Hawks,4,ATL
+Dariq,Whitehead,Ala,Oklahoma City Thunder,4,OKC
+Oscar,Tshiebwe,Centro,Utah Jazz,4,UTA
+Jordan,Miller,Guardia,Los Angeles Clippers,4,LAC
+Colin,Castleton,Centro,Orlando Magic,4,ORL
+Gregory,Jackson,Ala,Memphis Grizzlies,4,MEM
+Andre,Jackson Jr,Guardia,Milwaukee Bucks,4,MIL
+Chris,Livingston,Ala,Cleveland Cavaliers,4,CLE
+Duop,Reath,Centro,Portland Trail Blazers,4,POR
+Adam,Flagler,Guardia,San Antonio Spurs,4,SAS
+Mason,Jones,Guardia,Sacramento Kings,4,SAC
+Pete,Nance,Ala,Milwaukee Bucks,4,MIL
+Dillon,Jones,Ala,Washington Wizards,4,WAS
+Kj,Simpson,Guardia,Charlotte Hornets,4,CHA
+Bobi,Klintman,Ala,Detroit Pistons,4,DET
+Dalton,Knecht,Guardia,Los Angeles Lakers,4,LAL
+Terrence,Shannon,Guardia,Minnesota Timberwolves,4,MIN
+Devin,Carter,Guardia,Sacramento Kings,4,SAC
+Enrique,Freeman,Ala,Minnesota Timberwolves,4,MIN
+Anton,Watson,Ala,Los Angeles Lakers,4,LAL
+Baylor,Scheierman,Guardia,Boston Celtics,4,BOS
+Tyler,Smith,Ala,Houston Rockets,4,HOU
+Rob,Dillingham,Guardia,Minnesota Timberwolves,4,MIN
+Kevin,Mccullar Jr,Guardia,New York Knicks,4,NYK
+Antonio,Reeves,Guardia,Charlotte Hornets,4,CHA
+Johnny,Furphy,Guardia,Indiana Pacers,4,IND
+Tristen,Newton,Guardia,Minnesota Timberwolves,4,MIN
+Aj,Johnson,Guardia,Washington Wizards,4,WAS
+Nikola,Topic,Guardia,Oklahoma City Thunder,4,OKC
+Nikola,Djurisic,Guardia,Atlanta Hawks,4,ATL
+Cam,Christie,Guardia,Los Angeles Clippers,4,LAC
+Bronny,James,Guardia,Los Angeles Lakers,4,LAL
+Ariel,Hukporti,Centro,New York Knicks,4,NYK
+Harrison,Ingram,Ala,San Antonio Spurs,4,SAS
+Cody,Williams,Ala,Utah Jazz,4,UTA
+Pacome,Dadiet,Ala,New York Knicks,4,NYK
+Jonathan,Mogbo,Ala,Toronto Raptors,4,TOR
+Ulrich,Chomche,Centro,Toronto Raptors,4,TOR
+Drew,Peterson,Ala,Charlotte Hornets,4,CHA
+Luke,Travers,Ala,Cleveland Cavaliers,4,CLE
+Pj,Hall,Centro,Memphis Grizzlies,4,MEM
+Jackson,Rowe,Ala,Golden State Warriors,4,GSW
+Reece,Beekman,Guardia,Brooklyn Nets,4,BKN
+Yuki,Kawamura,Guardia,Chicago Bulls,4,CHI
+Jamison,Battle,Ala,Toronto Raptors,4,TOR
+Alex,Ducas,Ala,Oklahoma City Thunder,4,OKC
+Isaac,Jones,Ala,Detroit Pistons,4,DET
+Jack,McVeigh,Ala,Houston Rockets,4,HOU
+Carter,Bryant,Ala,San Antonio Spurs,4,SAS
+Amari,Williams,Ala,Boston Celtics,4,BOS
+Adou,Thiero,Ala,Los Angeles Lakers,4,LAL
+Tyrese,Proctor,Guardia,Cleveland Cavaliers,4,CLE
+Yanic Konan,Niederhauser,Centro,Los Angeles Clippers,4,LAC
+Rasheer,Fleming,Ala,Phoenix Suns,4,PHX
+Joan,Beringer,Ala,Minnesota Timberwolves,4,MIN
+Nolan,Traore,Guardia,Brooklyn Nets,4,BKN
+Tyson,Etienne,Guardia,Brooklyn Nets,4,BKN
+Alex,Toohey,Ala,Golden State Warriors,4,GSW
+Ben,Saraf,Guardia,Brooklyn Nets,4,BKN
+Mohamed,Diawara,Ala,New York Knicks,4,NYK
+Emanuel,Miller,Ala,Chicago Bulls,4,CHI
+Hugo,Gonzalez,Guardia,Boston Celtics,4,BOS
+Javon,Small,Guardia,Memphis Grizzlies,4,MEM
+Rayj,Dennis,Guardia,Indiana Pacers,4,IND
+Chris,Youngblood,Guardia,Oklahoma City Thunder,4,OKC
+Taelon,Peter,Guardia,Indiana Pacers,4,IND
+Moussa,Cisse,Centro,Dallas Mavericks,4,DAL
+Elijah,Harkless,Guardia,Utah Jazz,4,UTA
+Mark,Sears,Guardia,Milwaukee Bucks,4,MIL
