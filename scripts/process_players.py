@@ -16,7 +16,6 @@ import os
 import re
 from collections import OrderedDict
 
-
 def normalize_team(name: str) -> str:
     if name is None:
         return ""
