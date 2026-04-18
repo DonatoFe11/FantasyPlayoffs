@@ -111,8 +111,13 @@ def fetch_and_update_scores():
 
     lineups_to_process = list(target_lineups.values())
 
-    board = scoreboardv3.ScoreboardV3(game_date=nba_date)
-    all_games = board.get_dict().get('scoreboard', {}).get('games', [])
+    try:
+        # Aumentiamo anche il timeout da 30 a 60 secondi per dare più tempo all'NBA di rispondere
+        board = scoreboardv3.ScoreboardV3(game_date=nba_date, timeout=60)
+        all_games = board.get_dict().get('scoreboard', {}).get('games', [])
+    except Exception as e:
+        print(f"⚠️ I server NBA non rispondono (Timeout/Errore). Riproverò al prossimo giro. Dettaglio: {e}")
+        return
     
     active_games = [g for g in all_games if "Preevent" not in g.get('gameStatusText', '')]
     
