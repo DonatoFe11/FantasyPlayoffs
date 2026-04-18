@@ -39,6 +39,7 @@ def calculate_fantasy_points(p_data, team_won):
     stats = p_data.get('statistics', {})
     minutes = str(stats.get('minutes', '')).strip()
     
+    # Se non è sceso in campo, 0 spaccato
     if not minutes or 'PT00M00' in minutes or minutes == '00:00' or minutes == '0':
         return 0.0
 
@@ -54,16 +55,25 @@ def calculate_fantasy_points(p_data, team_won):
     fg3m = safe_int(stats.get('threePointersMade'))
     ftm = safe_int(stats.get('freeThrowsMade'))
     fta = safe_int(stats.get('freeThrowsAttempted'))
-    start_pos = str(p_data.get('position', '')).strip().upper()
-    blka = safe_int(stats.get('blocksReceived'))
+    
+    # FIX: Le API a volte cambiano nome a questo campo
+    blka = safe_int(stats.get('blocksReceived', stats.get('blocksAgainst', 0)))
+
+    # FIX QUINTETTO BASE: basta che abbia una posizione per capire che è partito titolare
+    start_pos = str(p_data.get('position', '')).strip()
+    is_starter = str(p_data.get('starter', '')).strip() == '1'
 
     missed_fg = fga - fgm
     missed_ft = fta - ftm
     reb = dreb + oreb
+    
+    # Calcolo per Doppia/Tripla Doppia
     stats_list = [pts, reb, ast, stl, blk]
     doubles = sum(1 for stat in stats_list if stat >= 10)
 
     score = 0.0
+    
+    # Somma Punti Base
     score += pts * 1.0
     score += dreb * 1.0
     score += oreb * 1.25
@@ -75,23 +85,28 @@ def calculate_fantasy_points(p_data, team_won):
     score += missed_fg * -1.0
     score += missed_ft * -1.0
 
+    # Bonus Triple
     if fg3m == 3: score += 3.0
     elif fg3m == 4: score += 4.0
     elif fg3m >= 5: score += 5.0
 
+    # Bonus Doppia / Tripla Doppia
     if doubles == 2: score += 5.0
     elif doubles == 3: score += 10.0
     elif doubles >= 4: score += 50.0
 
-    if start_pos in ['G', 'F', 'C']: score += 1.0
+    # Bonus Quintetto (+1)
+    if is_starter or start_pos != "":
+        score += 1.0
     
-    # Adesso team_won funzionerà sempre perché abbiamo l'ID della squadra!
-    if team_won: score = score * 1.05
+    # Bonus Vittoria Squadra (+5%)
+    if team_won: 
+        score = score * 1.05
 
     return round(score, 2)
 
 def fetch_and_update_scores():
-    print(f"🔄 Avvio Aggiornamento Punteggi tramite NBA Live API (Anti-Blocco)")
+    print(f"🔄 Avvio Aggiornamento Punteggi tramite NBA Live API")
     
     res_lineups = supabase.table("lineups").select("*").eq("is_manual_score", False).eq("is_locked", False).execute()
     all_unlocked_lineups = res_lineups.data
@@ -151,7 +166,6 @@ def fetch_and_update_scores():
                     winning_team_id = safe_int(away_team.get('teamId'))
 
             player_map = {}
-            # INIETTIAMO MANUALMENTE L'ID SQUADRA IN OGNI GIOCATORE
             for t_dict in [home_team, away_team]:
                 current_team_id = safe_int(t_dict.get('teamId'))
                 for p in t_dict.get('players', []):
@@ -187,7 +201,6 @@ def fetch_and_update_scores():
                     
                     if is_nba_final:
                         update_data["is_locked"] = True
-                        # ORA STAMPA ANCHE I VOTI FINALI ACCANTO AL LUCCHETTO
                         print(f"   🔒 LUCCHETTO CHIUSO per {entry['player_name']} in Gara {entry['match_id']} ({raw} -> {final})")
                     else:
                         print(f"   ✅ Aggiorno {entry['player_name']} (Gara {entry['match_id']}): {raw} -> {final}")
