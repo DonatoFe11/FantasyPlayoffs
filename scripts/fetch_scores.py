@@ -1,23 +1,13 @@
 import os
 import time
 import unicodedata
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client, Client
-from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3, boxscoremiscv3
 
-# --- TRAVESTIMENTO ANTI-BLOCCO NBA ---
-# Questo fa credere all'NBA che siamo un utente reale su Google Chrome e non un bot di GitHub
-custom_headers = {
-    'Host': 'stats.nba.com',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Referer': 'https://www.nba.com/',
-    'Origin': 'https://www.nba.com',
-    'Connection': 'keep-alive',
-}
+# IMPORTIAMO LA LIVE API (La porta di servizio senza blocchi)
+from nba_api.live.nba.endpoints import scoreboard, boxscore
 
 def super_clean(name):
     if not name: return ""
@@ -45,24 +35,29 @@ def safe_int(val):
     try: return int(val)
     except: return 0
 
-def calculate_fantasy_points(p_trad, p_misc, team_won):
-    minutes = str(p_trad.get('minutes', '')).strip()
-    if not minutes or minutes.startswith('00:00') or minutes == '0': return 0.0
+def calculate_fantasy_points(p_data, team_won):
+    # Nella Live API i dati sono dentro 'statistics'
+    stats = p_data.get('statistics', {})
+    minutes = str(stats.get('minutes', '')).strip()
+    
+    # Se il giocatore non è entrato (PT00M00S)
+    if not minutes or 'PT00M00' in minutes or minutes == '00:00' or minutes == '0':
+        return 0.0
 
-    pts = safe_int(p_trad.get('points'))
-    dreb = safe_int(p_trad.get('reboundsDefensive'))
-    oreb = safe_int(p_trad.get('reboundsOffensive'))
-    ast = safe_int(p_trad.get('assists'))
-    stl = safe_int(p_trad.get('steals'))
-    blk = safe_int(p_trad.get('blocks'))
-    tov = safe_int(p_trad.get('turnovers'))
-    fgm = safe_int(p_trad.get('fieldGoalsMade'))
-    fga = safe_int(p_trad.get('fieldGoalsAttempted'))
-    fg3m = safe_int(p_trad.get('threePointersMade'))
-    ftm = safe_int(p_trad.get('freeThrowsMade'))
-    fta = safe_int(p_trad.get('freeThrowsAttempted'))
-    start_pos = str(p_trad.get('position', '')).strip()
-    blka = safe_int(p_misc.get('blocksAgainst')) if p_misc else 0
+    pts = safe_int(stats.get('points'))
+    dreb = safe_int(stats.get('reboundsDefensive'))
+    oreb = safe_int(stats.get('reboundsOffensive'))
+    ast = safe_int(stats.get('assists'))
+    stl = safe_int(stats.get('steals'))
+    blk = safe_int(stats.get('blocks'))
+    tov = safe_int(stats.get('turnovers'))
+    fgm = safe_int(stats.get('fieldGoalsMade'))
+    fga = safe_int(stats.get('fieldGoalsAttempted'))
+    fg3m = safe_int(stats.get('threePointersMade'))
+    ftm = safe_int(stats.get('freeThrowsMade'))
+    fta = safe_int(stats.get('freeThrowsAttempted'))
+    start_pos = str(p_data.get('position', '')).strip()
+    blka = safe_int(stats.get('blocksReceived')) # La Live API lo chiama così
 
     missed_fg = fga - fgm
     missed_ft = fta - ftm
@@ -96,14 +91,13 @@ def calculate_fantasy_points(p_trad, p_misc, team_won):
     return round(score, 2)
 
 def fetch_and_update_scores():
-    nba_date = (datetime.now() - timedelta(hours=9)).strftime('%Y-%m-%d')
-    print(f"🔄 Aggiornamento Punteggi - NBA Date: {nba_date}")
+    print(f"🔄 Avvio Aggiornamento Punteggi tramite NBA Live API (Anti-Blocco)")
     
     res_lineups = supabase.table("lineups").select("*").eq("is_manual_score", False).eq("is_locked", False).execute()
     all_unlocked_lineups = res_lineups.data
     
     if not all_unlocked_lineups:
-        print("🤷 Nessuna formazione attiva da aggiornare (o tutte chiuse).")
+        print("🤷 Nessuna formazione attiva da aggiornare.")
         return
 
     target_lineups = {}
@@ -118,70 +112,71 @@ def fetch_and_update_scores():
     lineups_to_process = list(target_lineups.values())
 
     try:
-        # Applichiamo il travestimento e il timeout lungo
-        board = scoreboardv3.ScoreboardV3(game_date=nba_date, headers=custom_headers, timeout=60)
-        all_games = board.get_dict().get('scoreboard', {}).get('games', [])
+        # Recupera il tabellone Live (CDN)
+        board = scoreboard.ScoreBoard()
+        games = board.games.get_dict()
     except Exception as e:
-        print(f"⚠️ I server NBA sono blindati (Timeout/Errore). Riproverò al prossimo giro. Dettaglio: {e}")
+        print(f"⚠️ Errore caricamento Live Scoreboard: {e}")
         return
     
-    active_games = [g for g in all_games if "Preevent" not in g.get('gameStatusText', '')]
+    # gameStatus: 1 = Da Iniziare, 2 = In Corso, 3 = Finita
+    active_games = [g for g in games if g.get('gameStatus') in [2, 3]]
     
     if not active_games:
-        print(f"😴 Tutte le partite per il {nba_date} devono ancora iniziare. Skip.")
+        print(f"😴 Tutte le partite odierne devono ancora iniziare (o non ce ne sono). Skip.")
         return
 
     updates_count = 0
 
     for game in active_games:
         game_id = game.get('gameId')
-        status = game.get('gameStatusText')
-        is_nba_final = (status == 'Final')
+        status_num = game.get('gameStatus')
+        is_nba_final = (status_num == 3)
         
-        print(f"🏀 Analizzo Partita: {game_id} | Stato: {status}")
-
-        winning_team_id = None
-        if is_nba_final:
-            home = game.get('homeTeam', {})
-            away = game.get('awayTeam', {})
-            if safe_int(home.get('score')) > safe_int(away.get('score')):
-                winning_team_id = safe_int(home.get('teamId'))
-            else:
-                winning_team_id = safe_int(away.get('teamId'))
+        print(f"🏀 Analizzo Partita: {game_id} | Status: {status_num}")
 
         try:
-            # Anche qui usiamo il travestimento
-            trad_df = boxscoretraditionalv3.BoxScoreTraditionalV3(game_id=game_id, headers=custom_headers, timeout=60).get_data_frames()[0]
-            trad_players = trad_df.to_dict('records') if not trad_df.empty else []
-            time.sleep(1) # Rallentiamo un po' per non farci beccare
+            # Recupera il tabellino Live
+            box = boxscore.BoxScore(game_id)
+            game_data = box.game.get_dict()
+            time.sleep(0.5)
             
-            misc_df = boxscoremiscv3.BoxScoreMiscV3(game_id=game_id, headers=custom_headers, timeout=60).get_data_frames()[0]
-            misc_players = misc_df.to_dict('records') if not misc_df.empty else []
-            time.sleep(1)
+            home_team = game_data.get('homeTeam', {})
+            away_team = game_data.get('awayTeam', {})
             
-            trad_map = {}
-            for p in trad_players:
-                last = str(p.get('familyName', ''))
-                full = p.get('name') or f"{p.get('firstName', '')} {last}".strip()
-                trad_map[super_clean(full)] = p
-                if last: trad_map[super_clean(last)] = p
+            winning_team_id = None
+            if is_nba_final:
+                h_score = safe_int(home_team.get('score'))
+                a_score = safe_int(away_team.get('score'))
+                if h_score > a_score:
+                    winning_team_id = safe_int(home_team.get('teamId'))
+                elif a_score > h_score:
+                    winning_team_id = safe_int(away_team.get('teamId'))
 
-            misc_map = {super_clean(p.get('name') or p.get('familyName')): p for p in misc_players}
+            # Uniamo i giocatori in un'unica lista
+            all_players = home_team.get('players', []) + away_team.get('players', [])
+            
+            player_map = {}
+            for p in all_players:
+                full_name = p.get('name') or f"{p.get('firstName', '')} {p.get('familyName', '')}".strip()
+                last_name = p.get('familyName', '').strip()
+                
+                player_map[super_clean(full_name)] = p
+                if last_name:
+                    player_map[super_clean(last_name)] = p
 
         except Exception as e:
-            print(f"⚠️ Errore download statistiche partita {game_id}: {e}")
+            print(f"⚠️ Errore download partita {game_id}: {e}")
             continue
 
         for entry in lineups_to_process:
             fanta_name_clean = super_clean(entry['player_name'])
             
-            if fanta_name_clean in trad_map:
-                p_trad = trad_map[fanta_name_clean]
-                p_misc = misc_map.get(fanta_name_clean)
-                
-                team_won = (is_nba_final and safe_int(p_trad.get('teamId')) == winning_team_id)
+            if fanta_name_clean in player_map:
+                p_data = player_map[fanta_name_clean]
+                team_won = (is_nba_final and safe_int(p_data.get('teamId')) == winning_team_id)
 
-                raw = calculate_fantasy_points(p_trad, p_misc, team_won)
+                raw = calculate_fantasy_points(p_data, team_won)
                 multiplier = get_multiplier(entry['lineup_role'])
                 final = round(raw * multiplier, 2)
 
@@ -193,9 +188,9 @@ def fetch_and_update_scores():
                     
                     if is_nba_final:
                         update_data["is_locked"] = True
-                        print(f"   🔒 LUCCHETTO CHIUSO per {entry['player_name']} in Gara (Match ID {entry['match_id']})")
+                        print(f"   🔒 LUCCHETTO CHIUSO per {entry['player_name']} in Gara {entry['match_id']}")
                     else:
-                        print(f"   ✅ Aggiorno {entry['player_name']} (Match ID {entry['match_id']}): {raw} -> {final}")
+                        print(f"   ✅ Aggiorno {entry['player_name']} (Gara {entry['match_id']}): {raw} -> {final}")
                     
                     supabase.table("lineups").update(update_data).eq("id", entry['id']).execute()
                     updates_count += 1
