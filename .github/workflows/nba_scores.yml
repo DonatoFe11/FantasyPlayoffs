@@ -1,0 +1,30 @@
+name: NBA Live Scores
+
+on:
+  schedule:
+    # Ogni 5 minuti dalle 16:00 alle 07:59 UTC 
+    # (Corrisponde alle 18:00 - 09:59 italiane con UTC+2)
+    - cron: '*/5 16,17,18,19,20,21,22,23,0,1,2,3,4,5 * * *'
+  workflow_dispatch: # Permette di avviarlo a mano cliccando un tasto su GitHub
+
+jobs:
+  update-scores:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del codice
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Installa dipendenze
+        run: |
+          pip install pandas nba_api supabase python-dotenv
+
+      - name: Esegui aggiornamento punteggi
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: python scripts/fetch_scores.py

@@ -45,10 +45,10 @@ def safe_int(val):
 
 def calculate_fantasy_points(p_trad, p_misc, team_won):
     minutes = str(p_trad.get('minutes', '')).strip()
+    # Se il giocatore non ha minuti a referto, prende 0.0
     if not minutes or minutes.startswith('00:00') or minutes == '0':
         return 0.0
 
-    # Estrazione dati (Nomi campi standardizzati da nba_api)
     pts = safe_int(p_trad.get('points'))
     dreb = safe_int(p_trad.get('reboundsDefensive'))
     oreb = safe_int(p_trad.get('reboundsOffensive'))
@@ -70,7 +70,7 @@ def calculate_fantasy_points(p_trad, p_misc, team_won):
     stats_list = [pts, reb, ast, stl, blk]
     doubles = sum(1 for stat in stats_list if stat >= 10)
 
-    # --- FORMULA REGOLAMENTO ---
+    # Formula Fantabasket
     score = 0.0
     score += pts * 1.0
     score += dreb * 1.0
@@ -91,40 +91,47 @@ def calculate_fantasy_points(p_trad, p_misc, team_won):
     elif doubles == 3: score += 10.0
     elif doubles >= 4: score += 50.0
 
+    # Bonus quintetto
     if start_pos in ['G', 'F', 'C']:
         score += 1.0
 
+    # Bonus Vittoria 5%
     if team_won:
         score = score * 1.05
 
     return round(score, 2)
 
 def fetch_and_update_scores():
-    # CALCOLO DATA NBA (Ora italiana - 9 ore = Data corretta del Game Day USA)
+    # Calcolo data NBA (fuso orario)
     nba_date = (datetime.now() - timedelta(hours=9)).strftime('%Y-%m-%d')
-    print(f"🔄 Aggiornamento Punteggi - NBA Date: {nba_date} (Italia: {datetime.now().strftime('%H:%M')})")
+    print(f"🔄 Aggiornamento Punteggi - NBA Date: {nba_date}")
     
     res_lineups = supabase.table("lineups").select("*").eq("is_manual_score", False).execute()
     lineups = res_lineups.data
     
     if not lineups:
-        print("🤷 Nessuna formazione automatica trovata.")
+        print("🤷 Nessuna formazione automatica da aggiornare.")
         return
 
     board = scoreboardv3.ScoreboardV3(game_date=nba_date)
-    games = board.get_dict().get('scoreboard', {}).get('games', [])
+    all_games = board.get_dict().get('scoreboard', {}).get('games', [])
     
-    if not games:
-        print(f"📭 Nessuna partita trovata per la data {nba_date}.")
+    # --- IL FILTRO INTELLIGENTE ---
+    # Prendiamo solo le partite che sono IN CORSO o FINITE.
+    # Evitiamo di chiamare l'API per partite che inizieranno tra ore (stato 'Preevent')
+    active_games = [g for g in all_games if "Preevent" not in g.get('gameStatusText', '')]
+    
+    if not active_games:
+        print(f"😴 Tutte le partite per il {nba_date} devono ancora iniziare. Skip.")
         return
 
     updates_count = 0
 
-    for game in games:
+    for game in active_games:
         game_id = game.get('gameId')
         status = game.get('gameStatusText')
         
-        print(f"\n🏀 Partita: {game_id} | Stato: {status}")
+        print(f"🏀 Analizzo Partita: {game_id} | Stato: {status}")
 
         winning_team_id = None
         if status == 'Final':
@@ -136,54 +143,52 @@ def fetch_and_update_scores():
                 winning_team_id = safe_int(away.get('teamId'))
 
         try:
+            # Scarico i dati tramite DataFrame per stabilità e converto in dizionario
             trad_df = boxscoretraditionalv3.BoxScoreTraditionalV3(game_id=game_id).get_data_frames()[0]
             trad_players = trad_df.to_dict('records') if not trad_df.empty else []
-            time.sleep(0.4)
+            time.sleep(0.5)
             
             misc_df = boxscoremiscv3.BoxScoreMiscV3(game_id=game_id).get_data_frames()[0]
             misc_players = misc_df.to_dict('records') if not misc_df.empty else []
-            time.sleep(0.4)
+            time.sleep(0.5)
             
-            trad_dict_by_name = {}
+            # Mappe per il matching veloce
+            trad_map = {}
             for p in trad_players:
-                slug = str(p.get('playerSlug', '')).replace('-', ' ')
-                first, last = str(p.get('firstName', '')), str(p.get('familyName', ''))
-                full = p.get('name') or slug or f"{first} {last}".strip()
-                trad_dict_by_name[super_clean(full)] = p
-                if last: trad_dict_by_name[super_clean(last)] = p
+                last = str(p.get('familyName', ''))
+                full = p.get('name') or f"{p.get('firstName', '')} {last}".strip()
+                trad_map[super_clean(full)] = p
+                if last: trad_map[super_clean(last)] = p
 
-            misc_dict_by_name = {}
-            for p in misc_players:
-                slug = str(p.get('playerSlug', '')).replace('-', ' ')
-                first, last = str(p.get('firstName', '')), str(p.get('familyName', ''))
-                full = p.get('name') or slug or f"{first} {last}".strip()
-                misc_dict_by_name[super_clean(full)] = p
-                if last: misc_dict_by_name[super_clean(last)] = p
+            misc_map = {super_clean(p.get('name') or p.get('familyName')): p for p in misc_players}
 
         except Exception as e:
-            print(f"⚠️ Errore download statistiche partita {game_id}: {e}")
+            print(f"⚠️ Errore download partita {game_id}: {e}")
             continue
 
         for entry in lineups:
             fanta_name_clean = super_clean(entry['player_name'])
             
-            if fanta_name_clean in trad_dict_by_name:
-                p_trad = trad_dict_by_name[fanta_name_clean]
-                p_misc = misc_dict_by_name.get(fanta_name_clean)
+            if fanta_name_clean in trad_map:
+                p_trad = trad_map[fanta_name_clean]
+                p_misc = misc_map.get(fanta_name_clean)
                 
-                p_team_id = safe_int(p_trad.get('teamId'))
-                team_won = (status == 'Final' and p_team_id == winning_team_id)
+                team_won = (status == 'Final' and safe_int(p_trad.get('teamId')) == winning_team_id)
 
                 raw = calculate_fantasy_points(p_trad, p_misc, team_won)
                 multiplier = get_multiplier(entry['lineup_role'])
                 final = round(raw * multiplier, 2)
 
+                # Aggiorniamo solo se il punteggio è effettivamente diverso
                 if float(entry.get('raw_score') or 0) != raw or float(entry.get('final_score') or 0) != final:
-                    print(f"   ✅ {entry['player_name']}: {raw} -> {final} ({entry['lineup_role']})")
-                    supabase.table("lineups").update({"raw_score": raw, "final_score": final}).eq("id", entry['id']).execute()
+                    print(f"   ✅ Aggiorno {entry['player_name']}: {raw} -> {final}")
+                    supabase.table("lineups").update({
+                        "raw_score": raw,
+                        "final_score": final
+                    }).eq("id", entry['id']).execute()
                     updates_count += 1
 
-    print(f"\n🎉 Fine processo. Totale aggiornamenti: {updates_count}")
+    print(f"\n🎉 Fine. Totale aggiornamenti effettuati: {updates_count}")
 
 if __name__ == "__main__":
     fetch_and_update_scores()
