@@ -6,7 +6,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-# IMPORTIAMO LA LIVE API (La porta di servizio senza blocchi)
+# IMPORTIAMO LA LIVE API
 from nba_api.live.nba.endpoints import scoreboard, boxscore
 
 def super_clean(name):
@@ -36,11 +36,9 @@ def safe_int(val):
     except: return 0
 
 def calculate_fantasy_points(p_data, team_won):
-    # Nella Live API i dati sono dentro 'statistics'
     stats = p_data.get('statistics', {})
     minutes = str(stats.get('minutes', '')).strip()
     
-    # Se il giocatore non è entrato (PT00M00S)
     if not minutes or 'PT00M00' in minutes or minutes == '00:00' or minutes == '0':
         return 0.0
 
@@ -56,8 +54,8 @@ def calculate_fantasy_points(p_data, team_won):
     fg3m = safe_int(stats.get('threePointersMade'))
     ftm = safe_int(stats.get('freeThrowsMade'))
     fta = safe_int(stats.get('freeThrowsAttempted'))
-    start_pos = str(p_data.get('position', '')).strip()
-    blka = safe_int(stats.get('blocksReceived')) # La Live API lo chiama così
+    start_pos = str(p_data.get('position', '')).strip().upper()
+    blka = safe_int(stats.get('blocksReceived'))
 
     missed_fg = fga - fgm
     missed_ft = fta - ftm
@@ -86,6 +84,8 @@ def calculate_fantasy_points(p_data, team_won):
     elif doubles >= 4: score += 50.0
 
     if start_pos in ['G', 'F', 'C']: score += 1.0
+    
+    # Adesso team_won funzionerà sempre perché abbiamo l'ID della squadra!
     if team_won: score = score * 1.05
 
     return round(score, 2)
@@ -112,14 +112,12 @@ def fetch_and_update_scores():
     lineups_to_process = list(target_lineups.values())
 
     try:
-        # Recupera il tabellone Live (CDN)
         board = scoreboard.ScoreBoard()
         games = board.games.get_dict()
     except Exception as e:
         print(f"⚠️ Errore caricamento Live Scoreboard: {e}")
         return
     
-    # gameStatus: 1 = Da Iniziare, 2 = In Corso, 3 = Finita
     active_games = [g for g in games if g.get('gameStatus') in [2, 3]]
     
     if not active_games:
@@ -136,7 +134,6 @@ def fetch_and_update_scores():
         print(f"🏀 Analizzo Partita: {game_id} | Status: {status_num}")
 
         try:
-            # Recupera il tabellino Live
             box = boxscore.BoxScore(game_id)
             game_data = box.game.get_dict()
             time.sleep(0.5)
@@ -153,17 +150,19 @@ def fetch_and_update_scores():
                 elif a_score > h_score:
                     winning_team_id = safe_int(away_team.get('teamId'))
 
-            # Uniamo i giocatori in un'unica lista
-            all_players = home_team.get('players', []) + away_team.get('players', [])
-            
             player_map = {}
-            for p in all_players:
-                full_name = p.get('name') or f"{p.get('firstName', '')} {p.get('familyName', '')}".strip()
-                last_name = p.get('familyName', '').strip()
-                
-                player_map[super_clean(full_name)] = p
-                if last_name:
-                    player_map[super_clean(last_name)] = p
+            # INIETTIAMO MANUALMENTE L'ID SQUADRA IN OGNI GIOCATORE
+            for t_dict in [home_team, away_team]:
+                current_team_id = safe_int(t_dict.get('teamId'))
+                for p in t_dict.get('players', []):
+                    p['teamId'] = current_team_id
+                    
+                    full_name = p.get('name') or f"{p.get('firstName', '')} {p.get('familyName', '')}".strip()
+                    last_name = p.get('familyName', '').strip()
+                    
+                    player_map[super_clean(full_name)] = p
+                    if last_name:
+                        player_map[super_clean(last_name)] = p
 
         except Exception as e:
             print(f"⚠️ Errore download partita {game_id}: {e}")
@@ -188,7 +187,8 @@ def fetch_and_update_scores():
                     
                     if is_nba_final:
                         update_data["is_locked"] = True
-                        print(f"   🔒 LUCCHETTO CHIUSO per {entry['player_name']} in Gara {entry['match_id']}")
+                        # ORA STAMPA ANCHE I VOTI FINALI ACCANTO AL LUCCHETTO
+                        print(f"   🔒 LUCCHETTO CHIUSO per {entry['player_name']} in Gara {entry['match_id']} ({raw} -> {final})")
                     else:
                         print(f"   ✅ Aggiorno {entry['player_name']} (Gara {entry['match_id']}): {raw} -> {final}")
                     
