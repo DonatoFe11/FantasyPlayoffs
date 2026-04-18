@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Zap } from "lucide-react";
+import { getPlayerLastName } from "@/lib/utils";
 
 const ROLE_COLORS = {
   C: "bg-blue-500 text-white",
@@ -27,7 +28,7 @@ function RoleBadge({ role }) {
 function PlayerCell({ entry, align = "left" }) {
   if (!entry) return <div className="flex-1" />;
   const isCaptain = entry.lineup_role === "capitano";
-  const lastName = entry.player_name.split(" ").slice(-1)[0].toUpperCase();
+  const lastName = getPlayerLastName(entry.player_name);
 
   if (align === "left") {
     return (
@@ -76,7 +77,7 @@ function SectionBlock({ label, homeEntries, awayEntries }) {
                 {home ? <>
                   <RoleBadge role={home.player_role} />
                   <span className={`font-display font-bold text-sm tracking-wide ${home.lineup_role === "capitano" ? "text-red-500" : ""}`}>
-                    {home.player_name.split(" ").slice(-1)[0].toUpperCase()}
+                    {getPlayerLastName(home.player_name)}
                   </span>
                 </> : null}
               </div>
@@ -87,7 +88,7 @@ function SectionBlock({ label, homeEntries, awayEntries }) {
               <div className="flex-1 flex items-center gap-2 justify-end">
                 {away ? <>
                   <span className={`font-display font-bold text-sm tracking-wide ${away.lineup_role === "capitano" ? "text-red-500" : ""}`}>
-                    {away.player_name.split(" ").slice(-1)[0].toUpperCase()}
+                    {getPlayerLastName(away.player_name)}
                   </span>
                   <RoleBadge role={away.player_role} />
                 </> : null}

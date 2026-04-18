@@ -1,4 +1,5 @@
 import { Star, Plus, X } from "lucide-react";
+import { getPlayerLastName } from "@/lib/utils";
 
 // Order: G (bottom) → A (middle) → C (top/near basket)
 const FORMATION_POSITIONS = {
@@ -38,7 +39,7 @@ const ROLE_COLORS = {
 function FilledSlot({ entry, onRemove }) {
   const isCaptain = entry.lineup_role === "capitano";
   const colors = ROLE_COLORS[entry.player_role] || { bg: "bg-gray-500", border: "border-gray-300", text: "text-gray-100" };
-  const lastName = entry.player_name.split(" ").slice(-1)[0].toUpperCase();
+  const lastName = getPlayerLastName(entry.player_name);
 
   return (
     <div className="flex flex-col items-center gap-1">
