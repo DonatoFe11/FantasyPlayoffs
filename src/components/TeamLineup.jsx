@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Loader2, X, ClipboardList } from "lucide-react";
+import { Plus, Loader2, X, ClipboardList, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -36,8 +36,11 @@ function parseFormation(f) {
 
 export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   const [entries, setEntries] = useState([]);
+  const [originalEntries, setOriginalEntries] = useState([]);
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [formation, setFormation] = useState("2-2-1");
   const [scoreDialogOpen, setScoreDialogOpen] = useState(false);
 
@@ -79,6 +82,8 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
     // --------------------------------------------------------------
 
     setEntries(e);
+    setOriginalEntries(e);
+    setIsDirty(false);
     setPlayers(p);
     setLoading(false);
   }
@@ -94,29 +99,62 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
     setDialogOpen(true);
   }
 
-  async function addToLineup() {
+  function addToLineup() {
     if (!selectedPlayerId) return;
     const player = players.find((p) => p.id === selectedPlayerId);
-    await base44.entities.LineupEntry.create({
-      match_id: matchId,
-      team_id: teamId,
-      player_id: selectedPlayerId,
-      player_name: player.name,
-      player_role: player.role,
-      player_nba_team: player.nba_team || "",
-      lineup_role: selectedRole,
-      raw_score: 0,
-      final_score: 0,
+    
+    setEntries((prev) => {
+      const newEntries = [
+        ...prev,
+        {
+          id: `temp-${Date.now()}`,
+          match_id: matchId,
+          team_id: teamId,
+          player_id: selectedPlayerId,
+          player_name: player.name,
+          player_role: player.role,
+          player_nba_team: player.nba_team || "",
+          lineup_role: selectedRole,
+          raw_score: 0,
+          final_score: 0,
+        }
+      ];
+      newEntries.sort((a, b) => LINEUP_ROLE_ORDER.indexOf(a.lineup_role) - LINEUP_ROLE_ORDER.indexOf(b.lineup_role));
+      return newEntries;
     });
-    await touchMatch();
+
+    setIsDirty(true);
     setDialogOpen(false);
-    load();
   }
 
-  async function removeEntry(entryId) {
-    await base44.entities.LineupEntry.delete(entryId);
-    await touchMatch();
-    load();
+  function removeEntry(entryId) {
+    setEntries((prev) => prev.filter(e => e.id !== entryId));
+    setIsDirty(true);
+  }
+
+  async function saveLineup() {
+    setSaving(true);
+    try {
+      const toDelete = originalEntries.filter(orig => !entries.some(e => e.id === orig.id));
+      for (const entry of toDelete) {
+        await base44.entities.LineupEntry.delete(entry.id);
+      }
+
+      const toAdd = entries.filter(e => typeof e.id === "string" && e.id.startsWith("temp-"));
+      for (const entry of toAdd) {
+        const { id, ...data } = entry; // Rimuove l'ID temporaneo
+        await base44.entities.LineupEntry.create(data);
+      }
+
+      if (toAdd.length > 0 || toDelete.length > 0) {
+        await touchMatch();
+      }
+
+      await load();
+    } catch(err) {
+      console.error(err);
+      setSaving(false);
+    }
   }
 
   if (loading) {
@@ -212,15 +250,29 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
               Totale: <span className="font-bold text-foreground">{totalScore.toFixed(2)}</span>
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => setScoreDialogOpen(true)}
-          >
-            <ClipboardList className="w-4 h-4" />
-            Punteggi
-          </Button>
+          <div className="flex gap-2">
+            {isDirty && (
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-2"
+                onClick={saveLineup}
+                disabled={saving}
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Salva
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => setScoreDialogOpen(true)}
+            >
+              <ClipboardList className="w-4 h-4" />
+              Punteggi
+            </Button>
+          </div>
         </div>
         {/* Formation selector */}
         <div className="flex items-center gap-1.5 flex-wrap">
