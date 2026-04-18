@@ -7,7 +7,18 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3, boxscoremiscv3
 
-# --- FUNZIONE PER PULIRE I NOMI ---
+# --- TRAVESTIMENTO ANTI-BLOCCO NBA ---
+# Questo fa credere all'NBA che siamo un utente reale su Google Chrome e non un bot di GitHub
+custom_headers = {
+    'Host': 'stats.nba.com',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Referer': 'https://www.nba.com/',
+    'Origin': 'https://www.nba.com',
+    'Connection': 'keep-alive',
+}
+
 def super_clean(name):
     if not name: return ""
     name = "".join(c for c in unicodedata.normalize('NFD', name) if unicodedata.category(c) != 'Mn')
@@ -17,7 +28,6 @@ def super_clean(name):
             name = name[:-len(suffix)].strip()
     return name
 
-# --- SETUP SUPABASE ---
 script_path = Path(__file__).resolve()
 env_path = script_path.parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -89,7 +99,6 @@ def fetch_and_update_scores():
     nba_date = (datetime.now() - timedelta(hours=9)).strftime('%Y-%m-%d')
     print(f"🔄 Aggiornamento Punteggi - NBA Date: {nba_date}")
     
-    # 1. RECUPERIAMO SOLO LE FORMAZIONI SENZA LUCCHETTO
     res_lineups = supabase.table("lineups").select("*").eq("is_manual_score", False).eq("is_locked", False).execute()
     all_unlocked_lineups = res_lineups.data
     
@@ -97,26 +106,23 @@ def fetch_and_update_scores():
         print("🤷 Nessuna formazione attiva da aggiornare (o tutte chiuse).")
         return
 
-    # 2. FILTRO LOGICO: PRENDIAMO SOLO LA PRIMA PARTITA DISPONIBILE PER OGNI GIOCATORE
-    # Questo impedisce di scrivere i punti di Gara 1 anche nella formazione di Gara 2 se è già schierata
     target_lineups = {}
     for entry in all_unlocked_lineups:
         key = (entry['team_id'], entry['player_name'])
         if key not in target_lineups:
             target_lineups[key] = entry
         else:
-            # Se troviamo una Gara precedente (ID più basso), diamo la priorità a quella
             if entry['match_id'] < target_lineups[key]['match_id']:
                 target_lineups[key] = entry
 
     lineups_to_process = list(target_lineups.values())
 
     try:
-        # Aumentiamo anche il timeout da 30 a 60 secondi per dare più tempo all'NBA di rispondere
-        board = scoreboardv3.ScoreboardV3(game_date=nba_date, timeout=60)
+        # Applichiamo il travestimento e il timeout lungo
+        board = scoreboardv3.ScoreboardV3(game_date=nba_date, headers=custom_headers, timeout=60)
         all_games = board.get_dict().get('scoreboard', {}).get('games', [])
     except Exception as e:
-        print(f"⚠️ I server NBA non rispondono (Timeout/Errore). Riproverò al prossimo giro. Dettaglio: {e}")
+        print(f"⚠️ I server NBA sono blindati (Timeout/Errore). Riproverò al prossimo giro. Dettaglio: {e}")
         return
     
     active_games = [g for g in all_games if "Preevent" not in g.get('gameStatusText', '')]
@@ -144,13 +150,14 @@ def fetch_and_update_scores():
                 winning_team_id = safe_int(away.get('teamId'))
 
         try:
-            trad_df = boxscoretraditionalv3.BoxScoreTraditionalV3(game_id=game_id).get_data_frames()[0]
+            # Anche qui usiamo il travestimento
+            trad_df = boxscoretraditionalv3.BoxScoreTraditionalV3(game_id=game_id, headers=custom_headers, timeout=60).get_data_frames()[0]
             trad_players = trad_df.to_dict('records') if not trad_df.empty else []
-            time.sleep(0.5)
+            time.sleep(1) # Rallentiamo un po' per non farci beccare
             
-            misc_df = boxscoremiscv3.BoxScoreMiscV3(game_id=game_id).get_data_frames()[0]
+            misc_df = boxscoremiscv3.BoxScoreMiscV3(game_id=game_id, headers=custom_headers, timeout=60).get_data_frames()[0]
             misc_players = misc_df.to_dict('records') if not misc_df.empty else []
-            time.sleep(0.5)
+            time.sleep(1)
             
             trad_map = {}
             for p in trad_players:
@@ -162,7 +169,7 @@ def fetch_and_update_scores():
             misc_map = {super_clean(p.get('name') or p.get('familyName')): p for p in misc_players}
 
         except Exception as e:
-            print(f"⚠️ Errore download partita {game_id}: {e}")
+            print(f"⚠️ Errore download statistiche partita {game_id}: {e}")
             continue
 
         for entry in lineups_to_process:
@@ -178,7 +185,6 @@ def fetch_and_update_scores():
                 multiplier = get_multiplier(entry['lineup_role'])
                 final = round(raw * multiplier, 2)
 
-                # Se il punteggio è cambiato OPPURE la partita NBA è finita (e dobbiamo bloccare)
                 if float(entry.get('raw_score') or 0) != raw or is_nba_final:
                     update_data = {
                         "raw_score": raw,
