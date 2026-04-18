@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Loader2, X, ClipboardList, Save, RotateCcw } from "lucide-react";
+import { Plus, Loader2, X, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -37,7 +37,7 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   // DB State (la verità nel database)
   const [entries, setEntries] = useState([]);
   
-  // UI State (la bozza che vedi sullo schermo prima di salvare)
+  // UI State (la bozza che vedi sullo schermo)
   const [draftEntries, setDraftEntries] = useState([]);
   
   const [players, setPlayers] = useState([]);
@@ -54,29 +54,35 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   useEffect(() => { load(); }, [matchId, teamId]);
 
   async function load() {
-    const [e, p] = await Promise.all([
-      base44.entities.LineupEntry.filter({ match_id: matchId, team_id: teamId }, null, 50),
-      base44.entities.Player.filter({ fantasy_team_id: teamId }, null, 100),
-    ]);
-    e.sort((a, b) => LINEUP_ROLE_ORDER.indexOf(a.lineup_role) - LINEUP_ROLE_ORDER.indexOf(b.lineup_role));
-    
-    const starters = e.filter((x) => x.lineup_role === "capitano" || x.lineup_role === "titolare");
-    let initialFormation = "2-2-1"; 
+    try {
+      const [e, p] = await Promise.all([
+        base44.entities.LineupEntry.filter({ match_id: matchId, team_id: teamId }, null, 50),
+        base44.entities.Player.filter({ fantasy_team_id: teamId }, null, 100),
+      ]);
+      e.sort((a, b) => LINEUP_ROLE_ORDER.indexOf(a.lineup_role) - LINEUP_ROLE_ORDER.indexOf(b.lineup_role));
+      
+      const starters = e.filter((x) => x.lineup_role === "capitano" || x.lineup_role === "titolare");
+      let initialFormation = "2-2-1"; 
 
-    if (starters.length > 0) {
-      const counts = { G: 0, A: 0, C: 0 };
-      starters.forEach((x) => { if (x.player_role) counts[x.player_role]++; });
-      const bestFormation = FORMATIONS.find((f) => {
-        const [g, a, c] = f.split("-").map(Number);
-        return g >= counts.G && a >= counts.A && c >= counts.C;
-      });
-      if (bestFormation) initialFormation = bestFormation;
+      if (starters.length > 0) {
+        const counts = { G: 0, A: 0, C: 0 };
+        starters.forEach((x) => { if (x.player_role) counts[x.player_role]++; });
+        const bestFormation = FORMATIONS.find((f) => {
+          const [g, a, c] = f.split("-").map(Number);
+          return g >= counts.G && a >= counts.A && c >= counts.C;
+        });
+        if (bestFormation) initialFormation = bestFormation;
+      }
+      
+      setFormation(initialFormation); 
+      setEntries(e);
+      setDraftEntries(e); 
+      setPlayers(p); // L'ERRORE ERA QUI: Mi ero perso questa riga!
+      setLoading(false);
+    } catch (err) {
+      console.error("Errore di caricamento:", err);
+      setLoading(false);
     }
-    
-    setFormation(initialFormation); 
-    setEntries(e);
-    setDraftEntries(e); // Sincronizziamo la bozza col DB
-    setLoading(false);
   }
 
   async function touchMatch() {
@@ -90,13 +96,12 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
     setDialogOpen(true);
   }
 
-  // --- NUOVA LOGICA: Aggiunge solo alla bozza temporanea ---
   function addToLineup() {
     if (!selectedPlayerId) return;
     const player = players.find((p) => p.id === selectedPlayerId);
     
     const newEntry = {
-      id: `temp-${Date.now()}`, // ID fittizio per riconoscerlo
+      id: `temp-${Date.now()}`, 
       match_id: matchId,
       team_id: teamId,
       player_id: selectedPlayerId,
@@ -106,37 +111,30 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
       lineup_role: selectedRole,
       raw_score: 0,
       final_score: 0,
-      is_temp: true // Flag per dire "Non è ancora nel DB"
+      is_temp: true 
     };
 
     setDraftEntries([...draftEntries, newEntry]);
     setDialogOpen(false);
   }
 
-  // --- NUOVA LOGICA: Rimuove solo dalla bozza temporanea ---
   function removeEntry(entryId) {
     setDraftEntries(draftEntries.filter((e) => e.id !== entryId));
   }
 
-  // --- NUOVA LOGICA: Il salvataggio reale su DB ---
   async function saveLineup() {
     setSavingLineup(true);
     try {
-      // 1. Trova chi è stato rimosso (c'è nel DB ma non nella bozza)
       const draftIds = draftEntries.map(e => e.id);
       const toDelete = entries.filter(e => !draftIds.includes(e.id));
-      
-      // 2. Trova chi è stato aggiunto (c'è nella bozza col flag is_temp)
       const toAdd = draftEntries.filter(e => e.is_temp);
 
-      // 3. Esegui cancellazioni su Supabase
       for (const d of toDelete) {
         await base44.entities.LineupEntry.delete(d.id);
       }
       
-      // 4. Esegui inserimenti su Supabase
       for (const a of toAdd) {
-        const { id, is_temp, ...dbData } = a; // Rimuoviamo i campi temporanei
+        const { id, is_temp, ...dbData } = a; 
         await base44.entities.LineupEntry.create(dbData);
       }
 
@@ -144,7 +142,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
         await touchMatch();
       }
       
-      // Ricarichiamo tutto dal DB per sicurezza
       await load();
     } catch (err) {
       console.error("Errore salvataggio:", err);
@@ -154,8 +151,7 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   }
 
   function cancelChanges() {
-    setDraftEntries(entries); // Ripristina la bozza allo stato originale del DB
-    setFormation(formation); // (Opzionale) Potremmo ripristinare anche il modulo originale, ma non è essenziale
+    setDraftEntries(entries); 
   }
 
   if (loading) {
@@ -166,12 +162,10 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
     );
   }
 
-  // Calcoliamo le differenze per capire se far apparire il bottone Salva
   const toDelete = entries.filter(e => !draftEntries.find(d => d.id === e.id));
   const toAdd = draftEntries.filter(e => e.is_temp);
   const hasChanges = toDelete.length > 0 || toAdd.length > 0;
 
-  // --- TUTTI I CALCOLI ORA USANO LA BOZZA (draftEntries) E NON IL DB ---
   const usedPlayerIds = draftEntries.map((e) => e.player_id);
   const availablePlayers = players.filter((p) => !usedPlayerIds.includes(p.id));
 
@@ -234,7 +228,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
 
   return (
     <div className={`bg-card border rounded-xl overflow-hidden transition-all ${hasChanges ? 'border-primary ring-1 ring-primary/20 shadow-lg shadow-primary/10' : 'border-border'}`}>
-      {/* Header */}
       <div className="p-4 border-b border-border relative">
         {hasChanges && (
           <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-bl-lg uppercase tracking-wider">
@@ -258,7 +251,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
             Punteggi
           </Button>
         </div>
-        {/* Formation selector */}
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-xs text-muted-foreground font-medium mr-1">Modulo:</span>
           {FORMATIONS.map((f) => (
@@ -275,7 +267,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
         </div>
       </div>
 
-      {/* Court */}
       <div className="p-3">
         <CourtView
           entries={starterEntries}
@@ -285,7 +276,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
         />
       </div>
 
-      {/* Sesto Uomo */}
       <div className="px-4 pb-3">
         <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
           Sesto Uomo <span className="text-primary">(×1.0)</span>
@@ -314,7 +304,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
         )}
       </div>
 
-      {/* Panchina */}
       <div className="px-4 pb-4">
         <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
           Panchina <span className="text-muted-foreground">(×0.5)</span>
@@ -347,21 +336,18 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
         </div>
       </div>
 
-      {/* Barra di Salvataggio (Appare solo se ci sono modifiche) */}
       {hasChanges && (
         <div className="bg-primary/5 border-t border-primary/20 p-3 flex items-center justify-end gap-2 animate-in slide-in-from-bottom-2 fade-in">
           <Button variant="ghost" size="sm" onClick={cancelChanges} disabled={savingLineup} className="text-muted-foreground hover:text-foreground">
-            <RotateCcw className="w-4 h-4 mr-1.5" />
             Annulla
           </Button>
           <Button size="sm" onClick={saveLineup} disabled={savingLineup} className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90">
-            {savingLineup ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
+            {savingLineup ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : null}
             Salva Formazione
           </Button>
         </div>
       )}
 
-      {/* Add player dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -408,7 +394,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
         </DialogContent>
       </Dialog>
 
-      {/* Score dialog */}
       <ScoreDialog
         open={scoreDialogOpen}
         onOpenChange={setScoreDialogOpen}
