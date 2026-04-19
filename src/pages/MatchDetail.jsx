@@ -150,7 +150,7 @@ export default function MatchDetail() {
           {/* Ricalcola può ancora servire per "forzare" il salvataggio manuale se ci sono bug */}
           <Button onClick={recalcScores} variant="outline" size="sm" className="gap-2" disabled={saving}>
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Salva Somma
+            Ricalcola
           </Button>
           {match.status !== "completata" && (
             <Button onClick={finalizeMatch} size="sm" className="gap-2" disabled={saving}>
