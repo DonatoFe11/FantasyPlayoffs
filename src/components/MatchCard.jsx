@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { base44 } from "@/api/base44Client"; // NUOVO: Serve per leggere da Supabase
 
 const statusLabels = {
   da_giocare: "Da giocare",
@@ -15,6 +17,41 @@ const statusColors = {
 };
 
 export default function MatchCard({ match, onDelete }) {
+  // NUOVI STATI PER I PUNTEGGI LIVE
+  const [liveHomeScore, setLiveHomeScore] = useState(match.score_home || 0);
+  const [liveAwayScore, setLiveAwayScore] = useState(match.score_away || 0);
+
+  useEffect(() => {
+    // Se la partita è completata, mostriamo direttamente il punteggio salvato nel db
+    if (match.status === "completata") {
+      setLiveHomeScore(match.score_home || 0);
+      setLiveAwayScore(match.score_away || 0);
+      return;
+    }
+
+    // Altrimenti, scarichiamo i voti dei giocatori in tempo reale e facciamo la somma!
+    async function fetchLiveScores() {
+      try {
+        const entries = await base44.entities.LineupEntry.filter({ match_id: match.id }, null, 100);
+        
+        const homeScore = entries
+          .filter((e) => e.team_id === match.team_home_id)
+          .reduce((sum, e) => sum + (e.final_score || 0), 0);
+          
+        const awayScore = entries
+          .filter((e) => e.team_id === match.team_away_id)
+          .reduce((sum, e) => sum + (e.final_score || 0), 0);
+
+        setLiveHomeScore(homeScore);
+        setLiveAwayScore(awayScore);
+      } catch (error) {
+        console.error("Errore nel calcolo live della partita", error);
+      }
+    }
+
+    fetchLiveScores();
+  }, [match]);
+
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="p-5">
@@ -54,11 +91,11 @@ export default function MatchCard({ match, onDelete }) {
           </div>
           <div className="flex items-center gap-4 px-6">
             <span className="font-display text-2xl font-bold">
-              {match.score_home?.toFixed(2) || "0.00"}
+              {liveHomeScore.toFixed(2)}
             </span>
             <span className="text-muted-foreground">-</span>
             <span className="font-display text-2xl font-bold">
-              {match.score_away?.toFixed(2) || "0.00"}
+              {liveAwayScore.toFixed(2)}
             </span>
           </div>
           <div className="flex-1 text-right">
