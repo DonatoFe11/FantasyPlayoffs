@@ -10,6 +10,11 @@ export default function MatchDetail() {
   const { matchId } = useParams();
   const [match, setMatch] = useState(null);
   const [series, setSeries] = useState(null);
+  
+  // Aggiungiamo due stati per i punteggi calcolati al volo
+  const [homeLiveScore, setHomeLiveScore] = useState(0);
+  const [awayLiveScore, setAwayLiveScore] = useState(0);
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [view, setView] = useState("live"); // "live" | "lineup"
@@ -19,38 +24,59 @@ export default function MatchDetail() {
   async function load() {
     const matches = await base44.entities.Match.filter({ id: matchId });
     const m = matches[0];
-    setMatch(m);
+    
     if (m) {
+      // 1. Carica la Serie
       const seriesList = await base44.entities.Series.filter({ id: m.series_id });
       setSeries(seriesList[0]);
+      
+      // 2. NUOVO: Carica le formazioni e fai subito la somma automatica!
+      const entries = await base44.entities.LineupEntry.filter({ match_id: matchId }, null, 100);
+      
+      const calcHome = entries
+        .filter((e) => e.team_id === m.team_home_id)
+        .reduce((sum, e) => sum + (e.final_score || 0), 0);
+        
+      const calcAway = entries
+        .filter((e) => e.team_id === m.team_away_id)
+        .reduce((sum, e) => sum + (e.final_score || 0), 0);
+        
+      // Aggiorniamo la "visualizzazione" dei punteggi totali in tempo reale
+      setHomeLiveScore(Math.round(calcHome * 100) / 100);
+      setAwayLiveScore(Math.round(calcAway * 100) / 100);
+      
+      // Creiamo una "finta" copia del match con i punteggi aggiornati al volo per darla a MatchLive
+      setMatch({
+        ...m,
+        score_home: Math.round(calcHome * 100) / 100,
+        score_away: Math.round(calcAway * 100) / 100
+      });
+    } else {
+      setMatch(null);
     }
+    
     setLoading(false);
   }
 
+  // Lasciamo Ricalcola per sicurezza, ma salverà i dati che abbiamo già calcolato al volo
   const recalcScores = useCallback(async () => {
     setSaving(true);
-    const entries = await base44.entities.LineupEntry.filter({ match_id: matchId }, null, 100);
-    const homeScore = entries.filter((e) => e.team_id === match.team_home_id).reduce((sum, e) => sum + (e.final_score || 0), 0);
-    const awayScore = entries.filter((e) => e.team_id === match.team_away_id).reduce((sum, e) => sum + (e.final_score || 0), 0);
     await base44.entities.Match.update(matchId, {
-      score_home: Math.round(homeScore * 100) / 100,
-      score_away: Math.round(awayScore * 100) / 100,
+      score_home: homeLiveScore,
+      score_away: awayLiveScore,
       status: "in_corso",
     });
     await load();
     setSaving(false);
-  }, [matchId, match]);
+  }, [matchId, homeLiveScore, awayLiveScore]);
 
   const finalizeMatch = useCallback(async () => {
     setSaving(true);
-    const entries = await base44.entities.LineupEntry.filter({ match_id: matchId }, null, 100);
-    const homeScore = entries.filter((e) => e.team_id === match.team_home_id).reduce((sum, e) => sum + (e.final_score || 0), 0);
-    const awayScore = entries.filter((e) => e.team_id === match.team_away_id).reduce((sum, e) => sum + (e.final_score || 0), 0);
-    const winnerId = homeScore >= awayScore ? match.team_home_id : match.team_away_id;
+    const winnerId = homeLiveScore >= awayLiveScore ? match.team_home_id : match.team_away_id;
 
     await base44.entities.Match.update(matchId, {
-      score_home: Math.round(homeScore * 100) / 100,
-      score_away: Math.round(awayScore * 100) / 100,
+      score_home: homeLiveScore,
+      score_away: awayLiveScore,
       status: "completata",
       winner_id: winnerId,
     });
@@ -62,13 +88,14 @@ export default function MatchDetail() {
     const completed = updatedMatches.filter((m) => m.status === "completata");
     const winsHome = completed.filter((m) => m.winner_id === match.team_home_id).length;
     const winsAway = completed.filter((m) => m.winner_id === match.team_away_id).length;
+    
     const seriesUpdate = { wins_home: winsHome, wins_away: winsAway };
     if (winsHome >= 3 || winsAway >= 3) seriesUpdate.status = "completata";
     await base44.entities.Series.update(match.series_id, seriesUpdate);
 
     await load();
     setSaving(false);
-  }, [matchId, match]);
+  }, [matchId, match, homeLiveScore, awayLiveScore]);
 
   if (loading) {
     return (
@@ -120,9 +147,10 @@ export default function MatchDetail() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Ricalcola può ancora servire per "forzare" il salvataggio manuale se ci sono bug */}
           <Button onClick={recalcScores} variant="outline" size="sm" className="gap-2" disabled={saving}>
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Ricalcola
+            Salva Somma
           </Button>
           {match.status !== "completata" && (
             <Button onClick={finalizeMatch} size="sm" className="gap-2" disabled={saving}>
