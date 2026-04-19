@@ -6,7 +6,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-# IMPORTIAMO LA LIVE API
 from nba_api.live.nba.endpoints import scoreboard, boxscore
 
 def super_clean(name):
@@ -39,7 +38,6 @@ def calculate_fantasy_points(p_data, team_won):
     stats = p_data.get('statistics', {})
     minutes = str(stats.get('minutes', '')).strip()
     
-    # Se non è sceso in campo, 0 spaccato
     if not minutes or 'PT00M00' in minutes or minutes == '00:00' or minutes == '0':
         return 0.0
 
@@ -55,25 +53,17 @@ def calculate_fantasy_points(p_data, team_won):
     fg3m = safe_int(stats.get('threePointersMade'))
     ftm = safe_int(stats.get('freeThrowsMade'))
     fta = safe_int(stats.get('freeThrowsAttempted'))
-    
-    # FIX: Le API a volte cambiano nome a questo campo
     blka = safe_int(stats.get('blocksReceived', stats.get('blocksAgainst', 0)))
-
-    # FIX QUINTETTO BASE: basta che abbia una posizione per capire che è partito titolare
     start_pos = str(p_data.get('position', '')).strip()
     is_starter = str(p_data.get('starter', '')).strip() == '1'
 
     missed_fg = fga - fgm
     missed_ft = fta - ftm
     reb = dreb + oreb
-    
-    # Calcolo per Doppia/Tripla Doppia
     stats_list = [pts, reb, ast, stl, blk]
     doubles = sum(1 for stat in stats_list if stat >= 10)
 
     score = 0.0
-    
-    # Somma Punti Base
     score += pts * 1.0
     score += dreb * 1.0
     score += oreb * 1.25
@@ -85,23 +75,16 @@ def calculate_fantasy_points(p_data, team_won):
     score += missed_fg * -1.0
     score += missed_ft * -1.0
 
-    # Bonus Triple
     if fg3m == 3: score += 3.0
     elif fg3m == 4: score += 4.0
     elif fg3m >= 5: score += 5.0
 
-    # Bonus Doppia / Tripla Doppia
     if doubles == 2: score += 5.0
     elif doubles == 3: score += 10.0
     elif doubles >= 4: score += 50.0
 
-    # Bonus Quintetto (+1)
-    if is_starter or start_pos != "":
-        score += 1.0
-    
-    # Bonus Vittoria Squadra (+5%)
-    if team_won: 
-        score = score * 1.05
+    if is_starter or start_pos != "": score += 1.0
+    if team_won: score = score * 1.05
 
     return round(score, 2)
 
@@ -115,16 +98,7 @@ def fetch_and_update_scores():
         print("🤷 Nessuna formazione attiva da aggiornare.")
         return
 
-    target_lineups = {}
-    for entry in all_unlocked_lineups:
-        key = (entry['team_id'], entry['player_name'])
-        if key not in target_lineups:
-            target_lineups[key] = entry
-        else:
-            if entry['match_id'] < target_lineups[key]['match_id']:
-                target_lineups[key] = entry
-
-    lineups_to_process = list(target_lineups.values())
+    lineups_to_process = all_unlocked_lineups
 
     try:
         board = scoreboard.ScoreBoard()
@@ -193,20 +167,30 @@ def fetch_and_update_scores():
                 multiplier = get_multiplier(entry['lineup_role'])
                 final = round(raw * multiplier, 2)
 
-                if float(entry.get('raw_score') or 0) != raw or is_nba_final:
-                    update_data = {
-                        "raw_score": raw,
-                        "final_score": final
-                    }
-                    
-                    if is_nba_final:
-                        update_data["is_locked"] = True
-                        print(f"   🔒 LUCCHETTO CHIUSO per {entry['player_name']} in Gara {entry['match_id']} ({raw} -> {final})")
-                    else:
-                        print(f"   ✅ Aggiorno {entry['player_name']} (Gara {entry['match_id']}): {raw} -> {final}")
-                    
-                    supabase.table("lineups").update(update_data).eq("id", entry['id']).execute()
-                    updates_count += 1
+                # Controllo infallibile: ha i minuti > 0?
+                stats = p_data.get('statistics', {})
+                minutes = str(stats.get('minutes', '')).strip()
+                is_playing = bool(minutes and 'PT00M00' not in minutes and minutes not in ['00:00', '0'])
+                
+                # È live solo se la partita è in corso E lui ha messo piede in campo
+                is_live_score = (status_num == 2) and is_playing
+
+                update_data = {
+                    "raw_score": raw,
+                    "final_score": final,
+                    "is_live_score": is_live_score # Salviamo l'informazione pulita nel DB
+                }
+                
+                if is_nba_final:
+                    update_data["is_locked"] = True
+                    update_data["is_live_score"] = False # A fine partita, spegniamo il live
+                    print(f"   🔒 LUCCHETTO CHIUSO per {entry['player_name']} in Gara {entry['match_id']} ({raw} -> {final})")
+                else:
+                    if float(entry.get('final_score') or 0) != final or entry.get('is_live_score') != is_live_score:
+                        print(f"   ✅ Aggiorno {entry['player_name']} (Gara {entry['match_id']}): {final} | Live: {is_live_score}")
+                
+                supabase.table("lineups").update(update_data).eq("id", entry['id']).execute()
+                updates_count += 1
 
     print(f"\n🎉 Fine. Totale aggiornamenti effettuati: {updates_count}")
 
