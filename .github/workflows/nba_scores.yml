@@ -1,11 +1,7 @@
 name: NBA Live Scores
 
 on:
-  schedule:
-    # Ogni 5 minuti dalle 16:00 alle 07:59 UTC 
-    # (Corrisponde alle 18:00 - 09:59 italiane con UTC+2)
-    - cron: '*/5 17,18,19,20,21,22,23,0,1,2,3,4,5 * * *'
-  workflow_dispatch: # Permette di avviarlo a mano cliccando un tasto su GitHub
+  workflow_dispatch: # Permette a cron-job.org di avviarlo a mano con priorità massima
 
 jobs:
   update-scores:
