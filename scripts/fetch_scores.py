@@ -167,27 +167,37 @@ def fetch_and_update_scores():
                 multiplier = get_multiplier(entry['lineup_role'])
                 final = round(raw * multiplier, 2)
 
-                # Controllo infallibile: ha i minuti > 0?
                 stats = p_data.get('statistics', {})
                 minutes = str(stats.get('minutes', '')).strip()
                 is_playing = bool(minutes and 'PT00M00' not in minutes and minutes not in ['00:00', '0'])
                 
-                # È live solo se la partita è in corso E lui ha messo piede in campo
-                is_live_score = (status_num == 2) and is_playing
+                is_live_score_now = (status_num == 2) and is_playing
 
                 update_data = {
                     "raw_score": raw,
-                    "final_score": final,
-                    "is_live_score": is_live_score # Salviamo l'informazione pulita nel DB
+                    "final_score": final
                 }
                 
                 if is_nba_final:
-                    update_data["is_locked"] = True
-                    update_data["is_live_score"] = False # A fine partita, spegniamo il live
-                    print(f"   🔒 LUCCHETTO CHIUSO per {entry['player_name']} in Gara {entry['match_id']} ({raw} -> {final})")
+                    # GESTIONE RITARDO LUCCHETTO (Smart Lock)
+                    was_live = entry.get('is_live_score', False)
+                    
+                    if was_live:
+                        # Primo giro dopo la sirena: spegniamo il live ma NON lucchettiamo
+                        update_data["is_live_score"] = False
+                        update_data["is_locked"] = False
+                        print(f"   ⏳ Fine gara per {entry['player_name']}. Voto: {final}. Attendo 5 min per eventuali correzioni NBA...")
+                    else:
+                        # Secondo giro (5 min dopo) oppure giocatore che non è mai entrato in campo: Lucchettiamo!
+                        update_data["is_live_score"] = False
+                        update_data["is_locked"] = True
+                        print(f"   🔒 LUCCHETTO DEFINITIVO per {entry['player_name']} in Gara {entry['match_id']} ({final})")
                 else:
-                    if float(entry.get('final_score') or 0) != final or entry.get('is_live_score') != is_live_score:
-                        print(f"   ✅ Aggiorno {entry['player_name']} (Gara {entry['match_id']}): {final} | Live: {is_live_score}")
+                    # Partita ancora in corso
+                    update_data["is_live_score"] = is_live_score_now
+                    
+                    if float(entry.get('final_score') or 0) != final or entry.get('is_live_score') != is_live_score_now:
+                        print(f"   ✅ Aggiorno {entry['player_name']} (Gara {entry['match_id']}): {final} | Live: {is_live_score_now}")
                 
                 supabase.table("lineups").update(update_data).eq("id", entry['id']).execute()
                 updates_count += 1
