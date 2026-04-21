@@ -28,7 +28,6 @@ const LINEUP_ROLE_LABELS = {
 };
 const ROLE_COLORS = { C: "bg-blue-500", A: "bg-green-600", G: "bg-orange-500" };
 
-// Parse formation string "G-A-C" → { G, A, C } starter counts
 function parseFormation(f) {
   const [g, a, c] = f.split("-").map(Number);
   return { G: g, A: a, C: c };
@@ -44,7 +43,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   const [formation, setFormation] = useState("2-2-1");
   const [scoreDialogOpen, setScoreDialogOpen] = useState(false);
 
-  // Add player dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogFilter, setDialogFilter] = useState(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState("");
@@ -59,15 +57,13 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
     ]);
     e.sort((a, b) => LINEUP_ROLE_ORDER.indexOf(a.lineup_role) - LINEUP_ROLE_ORDER.indexOf(b.lineup_role));
     
-    // --- NUOVO CODICE: Auto-rilevamento intelligente del modulo ---
     const starters = e.filter((x) => x.lineup_role === "capitano" || x.lineup_role === "titolare");
-    let initialFormation = "2-2-1"; // Il modulo di base
+    let initialFormation = "2-2-1"; 
 
     if (starters.length > 0) {
       const counts = { G: 0, A: 0, C: 0 };
       starters.forEach((x) => { if (x.player_role) counts[x.player_role]++; });
 
-      // Cerca il primo modulo che può ospitare i giocatori attualmente in campo
       const bestFormation = FORMATIONS.find((f) => {
         const [g, a, c] = f.split("-").map(Number);
         return g >= counts.G && a >= counts.A && c >= counts.C;
@@ -78,9 +74,7 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
       }
     }
     
-    setFormation(initialFormation); // Aggiorna il bottone arancione
-    // --------------------------------------------------------------
-
+    setFormation(initialFormation); 
     setEntries(e);
     setOriginalEntries(e);
     setIsDirty(false);
@@ -142,7 +136,7 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
 
       const toAdd = entries.filter(e => typeof e.id === "string" && e.id.startsWith("temp-"));
       for (const entry of toAdd) {
-        const { id, ...data } = entry; // Rimuove l'ID temporaneo
+        const { id, ...data } = entry; 
         await base44.entities.LineupEntry.create(data);
       }
 
@@ -168,7 +162,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   const usedPlayerIds = entries.map((e) => e.player_id);
   const availablePlayers = players.filter((p) => !usedPlayerIds.includes(p.id));
 
-  // Slot counts
   const captainCount = entries.filter((e) => e.lineup_role === "capitano").length;
   const starterCount = entries.filter((e) => e.lineup_role === "titolare").length;
   const sixthCount = entries.filter((e) => e.lineup_role === "sesto_uomo").length;
@@ -183,37 +176,29 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
 
   const availableRoles = Object.entries(canAdd).filter(([, v]) => v).map(([k]) => k);
 
-  // Rule: exactly 1 player per role must stay OUT of lineup.
-  // Fixed squad composition: 3C, 5A, 5G → max in lineup: C=2, A=4, G=4
   const MAX_IN_LINEUP = { C: 2, A: 4, G: 4 };
 
   const inLineupByRole = { C: 0, A: 0, G: 0 };
   entries.forEach((e) => { if (e.player_role) inLineupByRole[e.player_role]++; });
 
-  // For a role slot in the lineup, can we add another player of that role?
   const canAddByRole = (role) => {
     const max = MAX_IN_LINEUP[role];
     if (max === undefined) return false;
     return inLineupByRole[role] < max;
   };
 
-  // Formation-aware: starters by role required by the current formation
-  const formationCounts = parseFormation(formation); // { G, A, C }
+  const formationCounts = parseFormation(formation); 
 
-  // For court slots: check if a specific role slot can still be filled
-  // considering formation constraints (can't exceed G/A/C starters allowed by formation)
   const startersByRole = { C: 0, A: 0, G: 0 };
   entries
     .filter((e) => e.lineup_role === "capitano" || e.lineup_role === "titolare")
     .forEach((e) => { if (e.player_role) startersByRole[e.player_role]++; });
 
-  // Can a role slot (titolare/capitano) be filled with a player of a given role?
   const canAddStarterByRole = (role) => {
     if (!canAddByRole(role)) return false;
     return startersByRole[role] < formationCounts[role];
   };
 
-  // For dialog: which lineup roles are selectable
   const dialogLineupRoles = dialogFilter
     ? (dialogFilter.lineupRole === "sesto_uomo"
         ? (canAdd.sesto_uomo ? ["sesto_uomo"] : [])
@@ -222,7 +207,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
           : availableRoles.filter((r) => r === "capitano" || r === "titolare"))
     : availableRoles;
 
-  // For dialog players: filter by role if set, then apply constraints
   const dialogPlayers = (dialogFilter?.playerRole
     ? availablePlayers.filter((p) => p.role === dialogFilter.playerRole)
     : availablePlayers
@@ -230,7 +214,6 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
     if (dialogFilter?.lineupRole === "panchinaro" || dialogFilter?.lineupRole === "sesto_uomo") {
       return canAddByRole(p.role);
     }
-    // starter slot: must respect formation
     return canAddStarterByRole(p.role);
   });
 
@@ -410,14 +393,13 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
         </DialogContent>
       </Dialog>
 
-      {/* Score dialog */}
+      {/* Score dialog - Abbiamo rimosso lineupField per non innescare il timestamp */}
       <ScoreDialog
         open={scoreDialogOpen}
         onOpenChange={setScoreDialogOpen}
         matchId={matchId}
         teamId={teamId}
         teamName={teamName}
-        lineupField={lineupField}
         onSaved={load}
       />
     </div>
