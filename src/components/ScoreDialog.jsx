@@ -11,7 +11,8 @@ import LineupEntryRow from "./LineupEntryRow";
 
 const LINEUP_ROLE_ORDER = ["capitano", "titolare", "sesto_uomo", "panchinaro"];
 
-export default function ScoreDialog({ open, onOpenChange, matchId, teamId, teamName, lineupField, onSaved }) {
+// Abbiamo rimosso lineupField dalle props
+export default function ScoreDialog({ open, onOpenChange, matchId, teamId, teamName, onSaved }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +24,7 @@ export default function ScoreDialog({ open, onOpenChange, matchId, teamId, teamN
     setLoading(true);
     const e = await base44.entities.LineupEntry.filter({ match_id: matchId, team_id: teamId }, null, 50);
     
-    // --- NUOVO ORDINAMENTO STABILE ---
+    // --- ORDINAMENTO STABILE ---
     e.sort((a, b) => {
       // 1. Ordina per ruolo in campo (Capitano, Titolare...)
       const roleDiff = LINEUP_ROLE_ORDER.indexOf(a.lineup_role) - LINEUP_ROLE_ORDER.indexOf(b.lineup_role);
@@ -39,15 +40,19 @@ export default function ScoreDialog({ open, onOpenChange, matchId, teamId, teamN
   }
 
   async function updateEntry(entryId, data) {
+    // 1. Aggiorna solo il voto del giocatore nel DB
     await base44.entities.LineupEntry.update(entryId, data);
-    await base44.entities.Match.update(matchId, { [lineupField]: new Date().toISOString() });
+    
+    // 2. Aggiorna il punteggio totale nel componente genitore
     if (onSaved) onSaved();
+    
+    // 3. Ricarica i dati a schermo (ora funzionerà senza schiantarsi!)
     load();
   }
 
   async function removeEntry(entryId) {
     await base44.entities.LineupEntry.delete(entryId);
-    await base44.entities.Match.update(matchId, { [lineupField]: new Date().toISOString() });
+    
     if (onSaved) onSaved();
     load();
   }
