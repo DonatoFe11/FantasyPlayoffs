@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Loader2, X, ClipboardList, Save } from "lucide-react";
+import { Plus, Loader2, X, ClipboardList, Save, Lock, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -33,7 +33,8 @@ function parseFormation(f) {
   return { G: g, A: a, C: c };
 }
 
-export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
+// NUOVA PROP: isLocked
+export default function TeamLineup({ matchId, teamId, teamName, lineupField, isLocked = false }) {
   const [entries, setEntries] = useState([]);
   const [originalEntries, setOriginalEntries] = useState([]);
   const [players, setPlayers] = useState([]);
@@ -42,11 +43,17 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   const [isDirty, setIsDirty] = useState(false);
   const [formation, setFormation] = useState("2-2-1");
   const [scoreDialogOpen, setScoreDialogOpen] = useState(false);
+  
+  // STATO PER OVERRIDE ADMIN
+  const [adminOverride, setAdminOverride] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogFilter, setDialogFilter] = useState(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState("");
   const [selectedRole, setSelectedRole] = useState("titolare");
+
+  // Calcola se le modifiche sono permesse
+  const canModify = !isLocked || adminOverride;
 
   useEffect(() => { load(); }, [matchId, teamId]);
 
@@ -87,6 +94,7 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   }
 
   function openSlotDialog(playerRole, lineupRole) {
+    if (!canModify) return;
     setDialogFilter({ playerRole, lineupRole });
     setSelectedPlayerId("");
     setSelectedRole(lineupRole);
@@ -94,7 +102,7 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   }
 
   function addToLineup() {
-    if (!selectedPlayerId) return;
+    if (!selectedPlayerId || !canModify) return;
     const player = players.find((p) => p.id === selectedPlayerId);
     
     setEntries((prev) => {
@@ -122,11 +130,13 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   }
 
   function removeEntry(entryId) {
+    if (!canModify) return;
     setEntries((prev) => prev.filter(e => e.id !== entryId));
     setIsDirty(true);
   }
 
   async function saveLineup() {
+    if (!canModify) return;
     setSaving(true);
     try {
       const toDelete = originalEntries.filter(orig => !entries.some(e => e.id === orig.id));
@@ -145,6 +155,7 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
       }
 
       await load();
+      setAdminOverride(false); // Resetta l'override dopo il salvataggio
     } catch(err) {
       console.error(err);
       setSaving(false);
@@ -223,7 +234,24 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
   const totalScore = entries.reduce((sum, e) => sum + (e.final_score || 0), 0);
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
+    <div className={`bg-card border rounded-xl overflow-hidden ${isLocked && !adminOverride ? 'border-red-900/30 shadow-[0_0_15px_rgba(220,38,38,0.05)]' : 'border-border'}`}>
+      
+      {/* BANNER LUCCHETTO */}
+      {isLocked && !adminOverride && (
+        <div className="bg-red-500/10 border-b border-red-500/20 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-red-600">
+            <Lock className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-wider">Formazione Bloccata</span>
+          </div>
+          <button 
+            onClick={() => setAdminOverride(true)}
+            className="text-[10px] uppercase font-bold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+          >
+            <ShieldAlert className="w-3 h-3" /> Admin
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-3">
@@ -234,7 +262,7 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
             </p>
           </div>
           <div className="flex gap-2">
-            {isDirty && (
+            {isDirty && canModify && (
               <Button
                 variant="default"
                 size="sm"
@@ -257,16 +285,20 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
             </Button>
           </div>
         </div>
+        
         {/* Formation selector */}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap opacity-100">
           <span className="text-xs text-muted-foreground font-medium mr-1">Modulo:</span>
           {FORMATIONS.map((f) => (
             <button
               key={f}
-              onClick={() => setFormation(f)}
+              onClick={() => canModify && setFormation(f)}
+              disabled={!canModify}
               className={`text-xs px-2.5 py-1 rounded-full font-semibold transition-all ${
-                formation === f ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-              }`}
+                formation === f 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-secondary text-muted-foreground hover:text-foreground"
+              } ${!canModify && formation !== f ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
               {f}
             </button>
@@ -279,8 +311,9 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
         <CourtView
           entries={starterEntries}
           formation={formation}
-          onRemove={removeEntry}
-          onSlotClick={(playerRole) => openSlotDialog(playerRole, canAdd.capitano ? "capitano" : "titolare")}
+          onRemove={(id) => canModify && removeEntry(id)}
+          onSlotClick={(playerRole) => canModify && openSlotDialog(playerRole, canAdd.capitano ? "capitano" : "titolare")}
+          isLocked={!canModify} // Passa il blocco a CourtView se lo supporta
         />
       </div>
 
@@ -298,17 +331,24 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
               <p className="text-sm font-semibold">{sixthEntry.player_name}</p>
               <p className="text-xs text-muted-foreground">{(sixthEntry.final_score || 0).toFixed(2)} pt</p>
             </div>
-            <button onClick={() => removeEntry(sixthEntry.id)} className="text-muted-foreground hover:text-destructive">
-              <X className="w-4 h-4" />
-            </button>
+            {canModify && (
+              <button onClick={() => removeEntry(sixthEntry.id)} className="text-muted-foreground hover:text-destructive">
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
         ) : (
           <button
             onClick={() => canAdd.sesto_uomo && openSlotDialog(null, "sesto_uomo")}
-            className="w-full bg-secondary/30 rounded-lg px-3 py-2.5 text-xs text-muted-foreground text-center border border-dashed border-border hover:border-primary/50 hover:text-foreground transition-colors flex items-center justify-center gap-2"
+            disabled={!canModify}
+            className={`w-full rounded-lg px-3 py-2.5 text-xs text-center border transition-colors flex items-center justify-center gap-2 ${
+              canModify 
+                ? "bg-secondary/30 text-muted-foreground border-dashed border-border hover:border-primary/50 hover:text-foreground" 
+                : "bg-secondary/10 text-muted-foreground/50 border-solid border-border cursor-not-allowed"
+            }`}
           >
-            <Plus className="w-3.5 h-3.5" />
-            Aggiungi sesto uomo
+            {canModify && <Plus className="w-3.5 h-3.5" />}
+            {canModify ? "Aggiungi sesto uomo" : "Nessun giocatore"}
           </button>
         )}
       </div>
@@ -328,20 +368,25 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
                 <p className="text-xs font-semibold truncate">{entry.player_name}</p>
                 <p className="text-[10px] text-muted-foreground">{(entry.final_score || 0).toFixed(2)} pt</p>
               </div>
-              <button onClick={() => removeEntry(entry.id)} className="text-muted-foreground hover:text-destructive flex-shrink-0">
-                <X className="w-3.5 h-3.5" />
-              </button>
+              {canModify && (
+                <button onClick={() => removeEntry(entry.id)} className="text-muted-foreground hover:text-destructive flex-shrink-0">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           ))}
           {Array.from({ length: Math.max(0, 4 - benchEntries.length) }).map((_, i) => (
-            <button
+            <div
               key={`empty-bench-${i}`}
-              onClick={() => canAdd.panchinaro && openSlotDialog(null, "panchinaro")}
-              className="flex items-center justify-center gap-1.5 bg-secondary/20 rounded-lg px-2.5 py-2 border border-dashed border-border hover:border-primary/50 hover:text-foreground transition-colors text-xs text-muted-foreground"
+              onClick={() => canModify && canAdd.panchinaro && openSlotDialog(null, "panchinaro")}
+              className={`flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 border text-xs ${
+                canModify 
+                  ? "bg-secondary/20 text-muted-foreground border-dashed border-border hover:border-primary/50 hover:text-foreground cursor-pointer transition-colors" 
+                  : "bg-secondary/10 text-muted-foreground/50 border-solid border-border cursor-not-allowed"
+              }`}
             >
-              <Plus className="w-3 h-3" />
-              Aggiungi
-            </button>
+              {canModify ? <><Plus className="w-3 h-3" /> Aggiungi</> : "Vuoto"}
+            </div>
           ))}
         </div>
       </div>
@@ -393,7 +438,7 @@ export default function TeamLineup({ matchId, teamId, teamName, lineupField }) {
         </DialogContent>
       </Dialog>
 
-      {/* Score dialog - Abbiamo rimosso lineupField per non innescare il timestamp */}
+      {/* Score dialog */}
       <ScoreDialog
         open={scoreDialogOpen}
         onOpenChange={setScoreDialogOpen}
