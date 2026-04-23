@@ -19,11 +19,27 @@ function RoleBadge({ role }) {
   );
 }
 
+// NUOVO: Helper intelligente per formattare il punteggio
+const formatScore = (player) => {
+  if (!player) return "-";
+  
+  // Se ha 0, la partita non è finita, non è in campo ora, e non l'hai scritto tu a mano -> Mostra "-"
+  if (
+    (player.final_score === 0 || !player.final_score) && 
+    !player.is_locked && 
+    !player.is_live_score && 
+    !player.is_manual_score
+  ) {
+    return "-";
+  }
+  
+  return (player.final_score || 0).toFixed(2);
+};
+
 function SectionBlock({ label, homeEntries, awayEntries }) {
   const maxRows = Math.max(homeEntries.length, awayEntries.length);
   if (maxRows === 0) return null;
 
-  // Stili responsivi: più piccoli su mobile, più grandi da "sm:" (tablet/PC) in poi
   const scoreBaseClasses = "font-display font-bold text-center rounded-md sm:rounded-lg px-1 py-1 sm:px-2.5 sm:py-1.5 border min-w-[50px] sm:min-w-[64px] text-[13px] sm:text-base";
   const liveScoreClasses = "bg-red-50 text-red-700 border-red-200 shadow-sm animate-pulse-subtle";
   const finalScoreClasses = "bg-secondary text-foreground border-border";
@@ -44,15 +60,11 @@ function SectionBlock({ label, homeEntries, awayEntries }) {
           const home = homeEntries[i];
           const away = awayEntries[i];
           
-          const homeScore = home?.final_score || 0;
-          const awayScore = away?.final_score || 0;
-          
           const isHomeLive = home && home.is_live_score;
           const isAwayLive = away && away.is_live_score;
 
           return (
             <div key={i} className="py-2 px-2 sm:px-4">
-              {/* Griglia super-ottimizzata: gap ridotti su mobile (gap-x-1.5) e normali su desktop (sm:gap-x-3.5) */}
               <div className="grid grid-cols-[auto,1fr,auto,auto,auto,1fr,auto] items-center gap-x-1.5 sm:gap-x-3.5">
                 
                 {/* === SQUADRA IN CASA (Sinistra) === */}
@@ -73,7 +85,7 @@ function SectionBlock({ label, homeEntries, awayEntries }) {
                         </div>
                       )}
                       <div className={`${scoreBaseClasses} ${isHomeLive ? liveScoreClasses : finalScoreClasses}`}>
-                        {homeScore.toFixed(2)}
+                        {formatScore(home)}
                       </div>
                     </div>
                   </>
@@ -96,7 +108,7 @@ function SectionBlock({ label, homeEntries, awayEntries }) {
                         </div>
                       )}
                       <div className={`${scoreBaseClasses} ${isAwayLive ? liveScoreClasses : finalScoreClasses}`}>
-                        {awayScore.toFixed(2)}
+                        {formatScore(away)}
                       </div>
                     </div>
 
