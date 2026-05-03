@@ -31,10 +31,28 @@ export default function Dashboard() {
   }
 
   const rounds = ["Quarti di Finale", "Semifinale", "Finale"];
-  const groupedSeries = rounds.map((round) => ({
+  
+  // 1. Group the series by round as before
+  let groupedSeries = rounds.map((round) => ({
     round,
     series: series.filter((s) => s.round === round),
   }));
+
+  // 2. Sort the groups so that rounds with active series are pushed to the top
+  groupedSeries.sort((a, b) => {
+    // Check if group A has any active series
+    const aHasActive = a.series.some((s) => s.status === "in_corso");
+    // Check if group B has any active series
+    const bHasActive = b.series.some((s) => s.status === "in_corso");
+
+    // If A is active and B is not, A goes first (-1)
+    if (aHasActive && !bHasActive) return -1;
+    // If B is active and A is not, B goes first (1)
+    if (!aHasActive && bHasActive) return 1;
+    
+    // If they are both active or both completed, keep their original order based on the 'rounds' array
+    return rounds.indexOf(a.round) - rounds.indexOf(b.round);
+  });
 
   return (
     <div className="space-y-10">
