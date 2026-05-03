@@ -65,6 +65,9 @@ export default function Teams() {
     );
   }
 
+  // --- NUOVO: Ordina le squadre per crediti decrescenti ---
+  const sortedTeams = [...teams].sort((a, b) => (b.credits ?? 0) - (a.credits ?? 0));
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -103,7 +106,7 @@ export default function Teams() {
         </Dialog>
       </div>
 
-      {teams.length === 0 ? (
+      {sortedTeams.length === 0 ? (
         <div className="text-center py-20 space-y-4">
           <Users className="w-16 h-16 text-muted-foreground/30 mx-auto" />
           <p className="text-muted-foreground text-lg">
@@ -112,7 +115,8 @@ export default function Teams() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teams.map((team) => {
+          {/* Usiamo sortedTeams al posto di teams */}
+          {sortedTeams.map((team) => {
             const teamPlayers = players.filter(
               (p) => p.fantasy_team_id === team.id
             );
