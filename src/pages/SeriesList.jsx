@@ -72,6 +72,26 @@ export default function SeriesList() {
 
   const rounds = ["Quarti di Finale", "Semifinale", "Finale"];
 
+  // --- NUOVA LOGICA DI ORDINAMENTO ---
+  // 1. Raggruppa le serie per turno
+  let groupedSeries = rounds.map((round) => ({
+    round,
+    series: series.filter((s) => s.round === round),
+  }));
+
+  // 2. Ordina portando in cima i turni con serie "in_corso"
+  groupedSeries.sort((a, b) => {
+    const aHasActive = a.series.some((s) => s.status === "in_corso");
+    const bHasActive = b.series.some((s) => s.status === "in_corso");
+
+    if (aHasActive && !bHasActive) return -1;
+    if (!aHasActive && bHasActive) return 1;
+    
+    // A parità di condizioni, mantiene l'ordine originale (Quarti -> Semifinale -> Finale)
+    return rounds.indexOf(a.round) - rounds.indexOf(b.round);
+  });
+  // -----------------------------------
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -160,8 +180,8 @@ export default function SeriesList() {
         </Dialog>
       </div>
 
-      {rounds.map((round) => {
-        const roundSeries = series.filter((s) => s.round === round);
+      {/* Sostituito il vecchio map con il map su groupedSeries */}
+      {groupedSeries.map(({ round, series: roundSeries }) => {
         if (roundSeries.length === 0) return null;
         return (
           <div key={round} className="space-y-4">
