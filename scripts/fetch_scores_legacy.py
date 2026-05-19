@@ -1,25 +1,12 @@
 import os
 import time
 import unicodedata
-import requests
 from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-# HEADER FINTI PER INGANNARE CLOUDFLARE E LA NBA
-# Facciamo credere ai server della NBA che siamo un normale browser Google Chrome su Windows
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://www.nba.com/",
-    "Origin": "https://www.nba.com",
-    "Connection": "keep-alive",
-    "Sec-Fetch-Dest": "empty",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Site": "same-site"
-}
+from nba_api.live.nba.endpoints import scoreboard, boxscore
 
 def super_clean(name):
     if not name: return ""
@@ -102,7 +89,7 @@ def calculate_fantasy_points(p_data, team_won):
     return round(score, 2)
 
 def fetch_and_update_scores():
-    print(f"🔄 Avvio Aggiornamento Punteggi (Modalità Stealth)")
+    print(f"🔄 Avvio Aggiornamento Punteggi tramite NBA Live API")
     
     res_lineups = supabase.table("lineups").select("*").eq("is_manual_score", False).eq("is_locked", False).execute()
     all_unlocked_lineups = res_lineups.data
@@ -114,19 +101,16 @@ def fetch_and_update_scores():
     lineups_to_process = all_unlocked_lineups
 
     try:
-        # Chiamata diretta alla CDN NBA scavalcando nba_api
-        url_sb = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
-        res_sb = requests.get(url_sb, headers=HEADERS, timeout=15)
-        res_sb.raise_for_status()
-        games = res_sb.json().get('scoreboard', {}).get('games', [])
+        board = scoreboard.ScoreBoard()
+        games = board.games.get_dict()
     except Exception as e:
-        print(f"⚠️ Errore caricamento Live Scoreboard NBA: {e}")
+        print(f"⚠️ Errore caricamento Live Scoreboard: {e}")
         return
     
     active_games = [g for g in games if g.get('gameStatus') in [2, 3]]
     
     if not active_games:
-        print(f"😴 Nessuna partita in corso/appena finita. Skip.")
+        print(f"😴 Tutte le partite odierne devono ancora iniziare (o non ce ne sono). Skip.")
         return
 
     updates_count = 0
@@ -139,13 +123,9 @@ def fetch_and_update_scores():
         print(f"🏀 Analizzo Partita: {game_id} | Status: {status_num}")
 
         try:
-            # Chiamata diretta al boxscore della singola partita
-            url_box = f"https://cdn.nba.com/static/json/liveData/boxscore/boxscore_{game_id}.json"
-            res_box = requests.get(url_box, headers=HEADERS, timeout=15)
-            res_box.raise_for_status()
-            game_data = res_box.json().get('game', {})
-            
-            time.sleep(1) # Attesa tattica per non farci bloccare di nuovo
+            box = boxscore.BoxScore(game_id)
+            game_data = box.game.get_dict()
+            time.sleep(0.5)
             
             home_team = game_data.get('homeTeam', {})
             away_team = game_data.get('awayTeam', {})
@@ -191,27 +171,33 @@ def fetch_and_update_scores():
                 minutes = str(stats.get('minutes', '')).strip()
                 is_playing = bool(minutes and 'PT00M00' not in minutes and minutes not in ['00:00', '0'])
                 
-                is_live_score = (status_num == 2) and is_playing
+                is_live_score_now = (status_num == 2) and is_playing
 
                 update_data = {
                     "raw_score": raw,
-                    "final_score": final,
-                    "is_live_score": is_live_score 
+                    "final_score": final
                 }
                 
                 if is_nba_final:
+                    # GESTIONE RITARDO LUCCHETTO (Smart Lock)
                     was_live = entry.get('is_live_score', False)
+                    
                     if was_live:
+                        # Primo giro dopo la sirena: spegniamo il live ma NON lucchettiamo
                         update_data["is_live_score"] = False
                         update_data["is_locked"] = False
                         print(f"   ⏳ Fine gara per {entry['player_name']}. Voto: {final}. Attendo 5 min per eventuali correzioni NBA...")
                     else:
+                        # Secondo giro (5 min dopo) oppure giocatore che non è mai entrato in campo: Lucchettiamo!
                         update_data["is_live_score"] = False
                         update_data["is_locked"] = True
                         print(f"   🔒 LUCCHETTO DEFINITIVO per {entry['player_name']} in Gara {entry['match_id']} ({final})")
                 else:
-                    if float(entry.get('final_score') or 0) != final or entry.get('is_live_score') != is_live_score:
-                        print(f"   ✅ Aggiorno {entry['player_name']} (Gara {entry['match_id']}): {final} | Live: {is_live_score}")
+                    # Partita ancora in corso
+                    update_data["is_live_score"] = is_live_score_now
+                    
+                    if float(entry.get('final_score') or 0) != final or entry.get('is_live_score') != is_live_score_now:
+                        print(f"   ✅ Aggiorno {entry['player_name']} (Gara {entry['match_id']}): {final} | Live: {is_live_score_now}")
                 
                 supabase.table("lineups").update(update_data).eq("id", entry['id']).execute()
                 updates_count += 1
